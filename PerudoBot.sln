@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerudoBot", "PerudoBot\PerudoBot.csproj", "{F84236AA-59EE-4CA9-B519-B45687BD460D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerudoBot.Database.Sqlite", "PerudoBot.Database.Sqlite\PerudoBot.Database.Sqlite.csproj", "{C74CF634-0459-449D-B0E6-A4ECE8350155}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F84236AA-59EE-4CA9-B519-B45687BD460D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F84236AA-59EE-4CA9-B519-B45687BD460D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F84236AA-59EE-4CA9-B519-B45687BD460D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C74CF634-0459-449D-B0E6-A4ECE8350155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C74CF634-0459-449D-B0E6-A4ECE8350155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C74CF634-0459-449D-B0E6-A4ECE8350155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C74CF634-0459-449D-B0E6-A4ECE8350155}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
