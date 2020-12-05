@@ -19,7 +19,7 @@ namespace PerudoBot
             new Program().RunBotASync().GetAwaiter().GetResult();
 
         private DiscordSocketClient _client;
-        private Discord.Commands.CommandService _commands;
+        private CommandService _commands;
         private IServiceProvider _services;
         private IConfigurationRoot _configuration;
 

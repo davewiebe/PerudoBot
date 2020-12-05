@@ -24,12 +24,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PerudoBot.Database.Sqlite\PerudoBot.Database.Sqlite.csproj" />
+    <ProjectReference Include="..\PerudoBot.GameService\PerudoBot.GameService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="perudobot.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

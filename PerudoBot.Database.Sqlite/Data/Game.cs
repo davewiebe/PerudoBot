@@ -15,15 +15,15 @@ namespace PerudoBot.Database.Sqlite.Data
 
         public int? PlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
-        public int RoundStartPlayerId { get; internal set; }
-        public DateTime DateCreated { get; internal set; }
-        public ulong GuildId { get; internal set; }
-        public string Winner { get; internal set; }
+        public int RoundStartPlayerId { get; set; }
+        public DateTime DateCreated { get; set; }
+        public ulong GuildId { get; set; }
+        public string Winner { get; set; }
 
         public DateTime DateStarted { get; set; }
 
-        public DateTime DateFinished { get; internal set; }
-        public bool CanCallExactToJoinAgain { get; internal set; }
+        public DateTime DateFinished { get; set; }
+        public bool CanCallExactToJoinAgain { get; set; }
         public ulong StatusMessage { get; internal set; }
 
         public virtual ICollection<GamePlayer> GamePlayers { get; set; }
