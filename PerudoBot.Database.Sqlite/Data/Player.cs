@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 {
     public class Player
     {
@@ -15,9 +15,7 @@ namespace PerudoBot.Database.Sqlite.Data
         [DefaultValue(0)]
         public ulong GuildId { get; set; }
 
-        public string Username { get; set; }
-
-        public string Nickname { get; set; }
+        public string Name { get; set; }
 
         public bool IsBot { get; internal set; }
 

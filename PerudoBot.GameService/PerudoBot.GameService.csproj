@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PerudoBot.Database.Sqlite\PerudoBot.Database.Sqlite.csproj" />
+    <ProjectReference Include="..\PerudoBot.Database.Sqlite\PerudoBot.Database.csproj" />
   </ItemGroup>
 
 </Project>

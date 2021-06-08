@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 {
     public class GamePlayer
     {
@@ -21,7 +21,7 @@ namespace PerudoBot.Database.Sqlite.Data
 
         public int NumberOfDice { get; set; }
         public string Dice { get; set; }
-        public int TurnOrder { get; internal set; }
+        public int TurnOrder { get; set; }
 
 
         public GamePlayerRound CurrentGamePlayerRound

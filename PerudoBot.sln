@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerudoBot", "PerudoBot\PerudoBot.csproj", "{F84236AA-59EE-4CA9-B519-B45687BD460D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerudoBot.Database.Sqlite", "PerudoBot.Database.Sqlite\PerudoBot.Database.Sqlite.csproj", "{C74CF634-0459-449D-B0E6-A4ECE8350155}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerudoBot.Database", "PerudoBot.Database.Sqlite\PerudoBot.Database.csproj", "{C74CF634-0459-449D-B0E6-A4ECE8350155}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerudoBot.GameService", "PerudoBot.GameService\PerudoBot.GameService.csproj", "{CEB25ABA-9781-4FF0-A9AD-291DDF2F5387}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerudoBot.GameService", "PerudoBot.GameService\PerudoBot.GameService.csproj", "{CEB25ABA-9781-4FF0-A9AD-291DDF2F5387}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

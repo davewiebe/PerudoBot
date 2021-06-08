@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 {
     public class GamePlayerRound
     {
@@ -18,6 +18,8 @@ namespace PerudoBot.Database.Sqlite.Data
         public string Dice { get; set; }
 
         public int TurnOrder { get; set; }
-        //public bool IsEliminated { get; set; } ==> return (number of dice == 0)
+
+        public bool IsEliminated { get; set; }
+
     }
 }

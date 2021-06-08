@@ -2,7 +2,7 @@
 using Discord.Commands;
 using System.Threading.Tasks;
 using System;
-using PerudoBot.Database.Sqlite.Data;
+using PerudoBot.Database.Data;
 using PerudoBot.GameService;
 
 namespace PerudoBot.Modules

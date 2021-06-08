@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 //[assembly: InternalsVisibleTo("PerudoBotTests.PerudoGameServiceTests")]
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 {
     public class Game
     {
@@ -16,15 +16,9 @@ namespace PerudoBot.Database.Sqlite.Data
         public int? PlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
         public int RoundStartPlayerId { get; set; }
-        public DateTime DateCreated { get; set; }
         public ulong GuildId { get; set; }
-        public string Winner { get; set; }
+        public int WinnerPlayerId { get; set; }
 
-        public DateTime DateStarted { get; set; }
-
-        public DateTime DateFinished { get; set; }
-        public bool CanCallExactToJoinAgain { get; set; }
-        public ulong StatusMessage { get; internal set; }
 
         public virtual ICollection<GamePlayer> GamePlayers { get; set; }
 

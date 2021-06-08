@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using PerudoBot.Database.Sqlite.Data;
+using PerudoBot.Database.Data;
 
 namespace PerudoBot.GameService
 {
@@ -17,8 +17,8 @@ namespace PerudoBot.GameService
         {
             if (_db.Games
                 .Where(x => x.ChannelId == channelId)
-                //.Where(x => x.State == (int)(object)GameState.InProgress
-                //        || x.State == (int)(object)GameState.Setup)
+                .Where(x => x.State == (int)(object)GameState.InProgress
+                        || x.State == (int)(object)GameState.Setup)
                .Any())
             {
                 string message = $"A game already being set up or is in progress.";
@@ -28,17 +28,29 @@ namespace PerudoBot.GameService
             var game = new Game
             {
                 ChannelId = channelId,
-                State = 0,
-                DateCreated = DateTime.Now,
+                State = (int)(object)GameState.Setup,
                 GuildId = guildId,
             };
 
-            var gameObject = new GameObject(game);
+            var gameObject = new GameObject(game, _db);
 
             _db.Games.Add(game);
             _db.SaveChanges();
 
             return gameObject;
+        }
+
+        public GameObject GetGame(ulong channelId, ulong guildId)
+        {
+            var game = _db.Games
+                .Where(x => x.ChannelId == channelId)
+                .Where(x => x.GuildId == guildId)
+                .OrderBy(x => x.Id)
+                .FirstOrDefault();
+
+            if (game == null) return null;
+
+            return new GameObject(game, _db);
         }
     }
 }

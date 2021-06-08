@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerudoBot.Database.Data;
 
 namespace PerudoBot.Database.Sqlite.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    partial class PerudoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210608034832_RestructureUsers")]
+    partial class RestructureUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,10 +28,19 @@ namespace PerudoBot.Database.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<double?>("DurationInSeconds")
+                        .HasColumnType("REAL");
+
                     b.Property<int>("GamePlayerId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("GamePlayerRoundId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsAutoAction")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsOutOfTurn")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsSuccess")
@@ -40,6 +51,9 @@ namespace PerudoBot.Database.Sqlite.Migrations
 
                     b.Property<int>("RoundId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("TimeStamp")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -62,8 +76,20 @@ namespace PerudoBot.Database.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("CanCallExactToJoinAgain")
+                        .HasColumnType("INTEGER");
+
                     b.Property<ulong>("ChannelId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateFinished")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateStarted")
+                        .HasColumnType("TEXT");
 
                     b.Property<ulong>("GuildId")
                         .HasColumnType("INTEGER");
@@ -77,8 +103,11 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.Property<int>("State")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("WinnerPlayerId")
+                    b.Property<ulong>("StatusMessage")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Winner")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -127,9 +156,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.Property<int>("GamePlayerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsEliminated")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("NumberOfDice")
                         .HasColumnType("INTEGER");
 
@@ -176,6 +202,15 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateFinished")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateStarted")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("DurationInSeconds")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("GameId")
                         .HasColumnType("INTEGER");
@@ -227,6 +262,20 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.HasBaseType("PerudoBot.Database.Data.Action");
 
                     b.HasDiscriminator().HasValue("LiarCall");
+                });
+
+            modelBuilder.Entity("PerudoBot.Database.Data.FaceoffRound", b =>
+                {
+                    b.HasBaseType("PerudoBot.Database.Data.Round");
+
+                    b.HasDiscriminator().HasValue("FaceoffRound");
+                });
+
+            modelBuilder.Entity("PerudoBot.Database.Data.PalificoRound", b =>
+                {
+                    b.HasBaseType("PerudoBot.Database.Data.Round");
+
+                    b.HasDiscriminator().HasValue("PalificoRound");
                 });
 
             modelBuilder.Entity("PerudoBot.Database.Data.StandardRound", b =>

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PerudoBot.Database;
-using PerudoBot.Database.Sqlite.Data;
+using PerudoBot.Database.Data;
 using System;
 using System.IO;
 using System.Reflection;

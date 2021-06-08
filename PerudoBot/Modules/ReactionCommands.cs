@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using PerudoBot.Database.Sqlite.Data;
+using PerudoBot.Database.Data;
 
 namespace PerudoBot.Modules
 {

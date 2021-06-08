@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 {
     public abstract class Action
     {
         public Action()
         {
-            TimeStamp = DateTime.Now;
         }
 
         public int Id { get; set; }
@@ -21,8 +20,7 @@ namespace PerudoBot.Database.Sqlite.Data
 
         public virtual GamePlayerRound GamePlayerRound { get; set; }
 
-        // has to be nullable as there's no way to assign historical data
-        public int? GamePlayerRoundId { get; set; }
+        public int GamePlayerRoundId { get; set; }
 
         public int RoundId { get; set; }
         public Round Round { get; set; }
@@ -33,26 +31,7 @@ namespace PerudoBot.Database.Sqlite.Data
         public virtual Action ParentAction { get; set; }
 
         public bool IsSuccess { get; set; }
-        public bool IsOutOfTurn { get; set; }
         public string ActionType { get; private set; }
-        public DateTime TimeStamp { get; set; }
-        public double? DurationInSeconds { get; set; }
-        public bool IsAutoAction { get; set; }
-
-        public void SetDuration()
-        {
-            if (ParentAction == null && ParentActionId != null)
-                throw new Exception("Parent Action must be loaded to calculate duration");
-
-            if (ParentAction != null)
-            {
-                DurationInSeconds = (TimeStamp - ParentAction.TimeStamp).TotalSeconds;
-            }
-            else
-            {
-                DurationInSeconds = (TimeStamp - Round.DateStarted).TotalSeconds;
-            }
-        }
     }
 
     public class Bid : Action

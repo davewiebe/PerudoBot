@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace PerudoBot.Database.Sqlite.Data
+namespace PerudoBot.Database.Data
 { 
     public class PerudoBotDbContext : DbContext
     {
@@ -28,8 +28,7 @@ namespace PerudoBot.Database.Sqlite.Data
         public DbSet<Round> Rounds { get; set; }
 
         public DbSet<StandardRound> StandardRounds { get; }
-        public DbSet<PalificoRound> PalificoRounds { get; }
-        public DbSet<FaceoffRound> FaceoffRounds { get; }
+        //public DbSet<FaceoffRound> FaceoffRounds { get; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,7 +52,6 @@ namespace PerudoBot.Database.Sqlite.Data
 
                 var connectionString = configuration.GetConnectionString("PerudoBotDb");
                 optionsBuilder.UseSqlite(connectionString);
-                // optionsBuilder.UseSnakeCaseNamingConvention();
             }
         }
     }
