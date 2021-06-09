@@ -14,12 +14,6 @@ namespace PerudoBot.Database.Data
 
         public ICollection<Action> Actions { get; set; }
 
-        public int NumberOfDice { get; set; }
         public string Dice { get; set; }
-
-        public int TurnOrder { get; set; }
-
-        public bool IsEliminated { get; set; }
-
     }
 }

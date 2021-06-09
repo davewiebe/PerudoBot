@@ -72,6 +72,8 @@ namespace PerudoBot.GameService
 
         public void Start()
         {
+            // create new round
+
             // shuffle players
             // and set dice
             var game = _db.Games.Single(x => x.Id == _gameId);

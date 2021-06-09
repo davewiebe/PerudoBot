@@ -16,13 +16,11 @@ namespace PerudoBot.Database.Data
 
         public virtual Game Game { get; set; }
 
-        public virtual ICollection<Action> Actions { get; set; }
+        //public virtual ICollection<Action> Actions { get; set; }
         public virtual ICollection<GamePlayerRound> GamePlayerRounds { get; set; }// = new List<GamePlayerRound>();
 
-        public int NumberOfDice { get; set; }
-        public string Dice { get; set; }
+        public int NumberOfDice { get; set; } // Current Number of Dice
         public int TurnOrder { get; set; }
-
 
         public GamePlayerRound CurrentGamePlayerRound
         {

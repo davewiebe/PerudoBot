@@ -15,7 +15,6 @@ namespace PerudoBot.Database.Data
 
         public int? PlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
-        public int RoundStartPlayerId { get; set; }
         public ulong GuildId { get; set; }
         public int WinnerPlayerId { get; set; }
 
