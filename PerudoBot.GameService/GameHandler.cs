@@ -40,11 +40,11 @@ namespace PerudoBot.GameService
             return gameObject;
         }
 
-        public GameObject GetGame(ulong channelId, ulong guildId)
+        public GameObject GetSettingUpGame(ulong channelId)
         {
             var game = _db.Games
                 .Where(x => x.ChannelId == channelId)
-                .Where(x => x.GuildId == guildId)
+                .Where(x => x.State == (int)GameState.Setup)
                 .OrderBy(x => x.Id)
                 .FirstOrDefault();
 
@@ -52,5 +52,19 @@ namespace PerudoBot.GameService
 
             return new GameObject(game, _db);
         }
+        public GameObject GetInProgressGame(ulong channelId)
+        {
+            var game = _db.Games
+                .Where(x => x.ChannelId == channelId)
+                .Where(x => x.State == (int)GameState.InProgress)
+                .OrderBy(x => x.Id)
+                .FirstOrDefault();
+
+            if (game == null) return null;
+
+            return new GameObject(game, _db);
+        }
+
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using PerudoBot.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace PerudoBot.Modules
         [Command("add")]
         public async Task AddPlayer(params string[] users)
         {
-            var game = _gameHandler.GetGame(Context.Channel.Id, Context.Guild.Id);
+            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
 
             if (game == null)
             {
@@ -58,16 +59,56 @@ namespace PerudoBot.Modules
         [Command("start")]
         public async Task StartGame()
         {
-            var game = _gameHandler.GetGame(Context.Channel.Id, Context.Guild.Id);
+            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
 
             game.Start();
-
-            foreach (var playerDice in game.GetPlayerDice())
+            try
             {
-                // send dice to each player
-            }
+                foreach (var playerDice in game.GetPlayerDice())
+                {
+                    // send dice to each player
+                    var message = $"Your dice: {playerDice.Dice}";
 
+                    var user = Context.Guild.Users.Single(x => x.Id == playerDice.UserId);
+
+
+                    var requestOptions = new RequestOptions()
+                    { RetryMode = RetryMode.RetryRatelimit };
+                    await user.SendMessageAsync(message, options: requestOptions);
+                }
+            }
+            catch (Exception e)
+            {
+                var monkey = e.Message;
+            }
             await ReplyAsync($"Starting the game!\nUse `!bid 2 2s` or `!exact` or `!liar` to play.");
+
+            await ReplyAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention(Context)} goes first");
+        }
+
+        [Command("newround")]
+        public async Task newround()
+        {
+            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            await ReplyAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention(Context)} goes first");
+        }
+
+        [Command("bid")]
+        public async Task Bid(params string[] bidText)
+        {
+            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+
+            var currentPlayer = game.GetCurrentPlayer();
+
+            if (Context.User.Id != currentPlayer.UserId) return;
+
+            var quantity = int.Parse(bidText[0]);
+            var pips = int.Parse(bidText[1].Trim('s'));
+
+            game.Bid(quantity, pips);
+
+
+            await ReplyAsync($"{currentPlayer.GetMention(Context)} bids `{quantity}` ˣ { pips }. { game.GetCurrentPlayer().GetMention(Context)} is up.");
         }
     }
 }

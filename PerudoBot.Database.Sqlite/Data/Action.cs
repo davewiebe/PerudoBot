@@ -30,15 +30,12 @@ namespace PerudoBot.Database.Data
         [ForeignKey("ParentActionId")]
         public virtual Action ParentAction { get; set; }
 
-        public bool IsSuccess { get; set; }
-        public string ActionType { get; private set; }
     }
 
     public class Bid : Action
     {
         public int Quantity { get; set; }
         public int Pips { get; set; }
-        public ulong MessageId { get; internal set; }
     }
 
     public class LiarCall : Action
