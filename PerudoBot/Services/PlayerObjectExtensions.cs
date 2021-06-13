@@ -5,12 +5,9 @@ namespace PerudoBot.Services
 {
     public static class PlayerObjectExtensions
     {
-        public static string GetMention(this PlayerObject playerObject, Discord.Commands.SocketCommandContext context)
+        public static string GetMention(this PlayerObject playerObject)
         {
-            var user = context.Guild.Users.SingleOrDefault(x => x.Id == playerObject.UserId);
-            if (user == null) return playerObject.Name;
-
-            return user.Mention;
+            return $"<@!{playerObject.UserId}>";
         }
     }
 }

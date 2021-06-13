@@ -13,7 +13,7 @@ namespace PerudoBot.Database.Data
         public int Id { get; set; }
         public int State { get; set; }
 
-        public int? PlayerTurnId { get; set; }
+        public int GamePlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
         public ulong GuildId { get; set; }
         public int WinnerPlayerId { get; set; }
@@ -25,7 +25,7 @@ namespace PerudoBot.Database.Data
 
 
         [NotMapped]
-        public GamePlayer CurrentGamePlayer => GamePlayers.SingleOrDefault(x => x.PlayerId == PlayerTurnId);
+        public GamePlayer CurrentGamePlayer => GamePlayers.SingleOrDefault(x => x.PlayerId == GamePlayerTurnId);
 
         [NotMapped]
         public Round CurrentRound => Rounds.LastOrDefault();
