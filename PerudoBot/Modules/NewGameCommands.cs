@@ -24,6 +24,7 @@ namespace PerudoBot.Modules
                 $"`!rattles` not implemented\n" +
                 $"`!bid on 1s` not implemented\n" +
                 $"`Palifico rounds` not implemented\n" +
+                $"`!note` not implemented\n" +
                 $"`!elo` not implemented\n\n" +
                 "*who says you have to have new features to be 2.0?*";
 
@@ -33,6 +34,21 @@ namespace PerudoBot.Modules
             var embed = builder.Build();
 
             await Context.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+
+        [Command("bug")]
+        public async Task Bug(params string[] options)
+        {
+            
+            var responses = new List<string>();
+            responses.Add("It's not a bug, it's a feature!");
+            responses.Add("I think it's actually Discord that's having issues.");
+            responses.Add("We don't know if that's actually a bug yet...");
+            responses.Add("I think this one just comes down to user error.");
+            responses.Add("Wow. Shots fired.");
+            responses.Add($"I can track who's submitting these. Ready for some garbage hands {Context.User.Username}?.");
+
+            await ReplyAsync(responses.OrderBy(x => Guid.NewGuid()).First());
         }
 
         [Command("option")]
@@ -152,7 +168,7 @@ namespace PerudoBot.Modules
 
             var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
 
-            await ReplyAsync($"Starting the game!\nUse `!bid 2 2s` or `!exact` or `!liar` to play.");
+            await ReplyAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
 
             game.Start();
 
@@ -161,7 +177,7 @@ namespace PerudoBot.Modules
 
         private async Task StartNewRound(GameObject game)
         {
-            var roundStatus = game.StartNewRound();
+             var roundStatus = game.StartNewRound();
 
             if (roundStatus.IsActive == false)
             {
