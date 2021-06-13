@@ -1,7 +1,7 @@
 ﻿using PerudoBot.GameService;
 using System.Linq;
 
-namespace PerudoBot.Services
+namespace PerudoBot.Extensions
 {
     public static class PlayerObjectExtensions
     {

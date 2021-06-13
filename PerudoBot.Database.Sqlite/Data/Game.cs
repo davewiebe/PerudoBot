@@ -18,6 +18,7 @@ namespace PerudoBot.Database.Data
         public ulong GuildId { get; set; }
         public int WinnerPlayerId { get; set; }
 
+        public string Mode { get; set; }
 
         public virtual ICollection<GamePlayer> GamePlayers { get; set; }
 

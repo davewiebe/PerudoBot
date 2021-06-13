@@ -8,6 +8,7 @@ using PerudoBot.Database;
 using PerudoBot.Database.Data;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -95,9 +96,8 @@ namespace PerudoBot
             }
             else if (message.HasStringPrefix(context.Client.CurrentUser.Mention, ref argPos))
             {
-                result = await _commands.ExecuteAsync(context, argPos + 1, _services);
+                result = await _commands.ExecuteAsync(context, "version", _services);
             }
-
             if (result != null)
             {
                 if (!result.IsSuccess) Console.WriteLine(result.ErrorReason);

@@ -66,6 +66,20 @@ namespace PerudoBot.GameService
             return true;
         }
 
+        public void SetModeVariable()
+        {
+            var game = _db.Games.Single(x => x.Id == _gameId);
+            game.Mode = GameMode.Variable;
+            _db.SaveChanges();
+        }
+
+        public void SetModeSuddenDeath()
+        {
+            var game = _db.Games.Single(x => x.Id == _gameId);
+            game.Mode = GameMode.SuddenDeath;
+            _db.SaveChanges();
+        }
+
         public List<string> GetPlayers()
         {
             var game = _db.Games
@@ -74,6 +88,14 @@ namespace PerudoBot.GameService
                 .Single(x => x.Id == _gameId);
             
             return game.GamePlayers.Select(x => x.Player.Name).ToList();
+        }
+
+        public string GetMode()
+        {
+            var game = _db.Games.Single(x => x.Id == _gameId);
+            if (game.Mode == GameMode.SuddenDeath) return "Sudden Death";
+            if (game.Mode == GameMode.Variable) return "Variable";
+            return "Error";
         }
 
         public void Start()
@@ -120,7 +142,8 @@ namespace PerudoBot.GameService
                 return new RoundStatus
                 {
                     IsActive = false,
-                    Winner = activeGamePlayers.Single().ToPlayerObject()
+                    Winner = activeGamePlayers.Single().ToPlayerObject(),
+                    PlayerDice = new List<PlayerDice>()
                 };
             }
 
@@ -162,6 +185,14 @@ namespace PerudoBot.GameService
                 IsActive = true,
                 PlayerDice = GetPlayerDice()
             };
+        }
+
+        public void Terminate()
+        {
+            var game = _db.Games
+                .Single(x => x.Id == _gameId);
+            game.State = (int)GameState.Terminated;
+            _db.SaveChanges();
         }
 
         public void Bid(int quantity, int pips)
@@ -249,7 +280,7 @@ namespace PerudoBot.GameService
             if (previousBid.Quantity <= actualQuantity)
             {
                 // Bidder was correct
-                liarResult.DiceLost = (actualQuantity - previousBid.Quantity) + 1;
+                liarResult.DiceLost = GetDiceLost((actualQuantity - previousBid.Quantity) + 1);
                 liarResult.IsSuccessful = false;
                 liarResult.PlayerWhoLostDice = liarResult.PlayerWhoCalledLiar;
 
@@ -259,7 +290,7 @@ namespace PerudoBot.GameService
             }
             else // Liar caller was correct
             {
-                liarResult.DiceLost = previousBid.Quantity - actualQuantity;
+                liarResult.DiceLost = GetDiceLost(previousBid.Quantity - actualQuantity);
                 liarResult.IsSuccessful = true;
                 liarResult.PlayerWhoLostDice = liarResult.PlayerWhoBidLast;
 
@@ -271,6 +302,17 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
 
             return liarResult;
+        }
+
+        private int GetDiceLost(int numberOfDiceOffBy)
+        {
+            var gameMode = _db.Games.Single(x => x.Id == _gameId).Mode;
+
+            if (gameMode == GameMode.Variable)
+            {
+                return numberOfDiceOffBy;
+            }
+            return 5;
         }
 
         public object GetCurrentRoundNumber()
@@ -311,27 +353,6 @@ namespace PerudoBot.GameService
                 .CurrentGamePlayer;
 
             return currentGamePlayer.ToPlayerObject();
-
-            //var currentRound = _db.Games
-            //    .Include(x => x.Rounds)
-            //    .ThenInclude(x => x.Actions)
-            //    .Single(x => x.Id == _gameId)
-            //    .CurrentRound;
-
-            //int currentGamePlayerId;
-            //if (currentRound.LatestAction == null) currentGamePlayerId = currentRound.StartingPlayerId;
-            //else
-            //{
-            //    var lastPlayerId = currentRound.LatestAction.GamePlayerId;
-
-            //    currentGamePlayerId = GetNextPlayer(lastPlayerId);
-            //}
-
-            //var currentGamePlayer = _db.GamePlayers
-            //    .Include(x => x.Player)
-            //    .Single(x => x.Id == currentGamePlayerId);
-
-            //return currentGamePlayer.ToPlayerObject();
         }
 
         private int GetNextActiveGamePlayerId()

@@ -13,7 +13,17 @@ namespace PerudoBot.GameService
             _db = db;
         }
 
-        public GameObject CreateGame(ulong channelId, ulong guildId)
+        public GameObject CreateVariableGame(ulong channelId, ulong guildId)
+        {
+            return CreateGame(channelId, guildId, GameMode.Variable);
+        }
+
+        public GameObject CreateSuddenDeathGame(ulong channelId, ulong guildId)
+        {
+            return CreateGame(channelId, guildId, GameMode.SuddenDeath);
+        }
+
+        private GameObject CreateGame(ulong channelId, ulong guildId, string gameMode)
         {
             if (_db.Games
                 .Where(x => x.ChannelId == channelId)
@@ -30,12 +40,14 @@ namespace PerudoBot.GameService
                 ChannelId = channelId,
                 State = (int)(object)GameState.Setup,
                 GuildId = guildId,
+                Mode = gameMode
             };
 
-            var gameObject = new GameObject(game, _db);
 
             _db.Games.Add(game);
             _db.SaveChanges();
+
+            var gameObject = new GameObject(game, _db);
 
             return gameObject;
         }
