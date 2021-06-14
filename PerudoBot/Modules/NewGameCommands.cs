@@ -275,7 +275,7 @@ namespace PerudoBot.Modules
 
             await ReplyAsync($"{liarResult.PlayerWhoCalledLiar.Name} called **liar** on `{liarResult.BidQuantity}` ˣ {liarResult.BidPips.ToEmoji()}.");
 
-            // for the dramatic affect
+            // for dramatic effect
             Thread.Sleep(3000);
 
             await ReplyAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention()} loses {liarResult.DiceLost} dice. :fire:");
