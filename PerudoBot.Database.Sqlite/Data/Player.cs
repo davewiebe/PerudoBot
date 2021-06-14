@@ -17,7 +17,7 @@ namespace PerudoBot.Database.Data
 
         public string Name { get; set; }
 
-        public bool IsBot { get; internal set; }
+        public bool IsBot { get; set; }
 
         public ICollection<GamePlayer> GamesPlayed { get; set; }
     }

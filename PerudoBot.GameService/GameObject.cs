@@ -24,7 +24,7 @@ namespace PerudoBot.GameService
             return _gameId;
         }
 
-        public bool AddPlayer(ulong userId, ulong guildId, string username, string nickname)
+        public bool AddPlayer(ulong userId, ulong guildId, string username, string nickname, bool isBot)
         {
             // check if user exists
             var player = _db.Players
@@ -44,7 +44,8 @@ namespace PerudoBot.GameService
                 {
                     Name = nickname ?? username,
                     GuildId = guildId,
-                    UserId = userId
+                    UserId = userId,
+                    IsBot = isBot
                 };
                 _db.Players.Add(player);
             }
@@ -391,7 +392,8 @@ namespace PerudoBot.GameService
             {
                 Name = x.GamePlayer.Player.Name,
                 UserId = x.GamePlayer.Player.UserId,
-                Dice = x.Dice
+                Dice = x.Dice,
+                IsBot = x.GamePlayer.Player.IsBot
             }).ToList();
         }
     }
@@ -401,6 +403,7 @@ namespace PerudoBot.GameService
         public string Name { get; set; }
         public ulong UserId { get; set; }
         public string Dice { get; set; }
+        public bool IsBot { get; set; }
 
         public PlayerDice()
         {

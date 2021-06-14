@@ -14,6 +14,12 @@ namespace PerudoBot.Modules
 {
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
+        [Command("updateavatar")]
+        public async Task UpdateAvatarCommand(params string[] options)
+        {
+            await UpdateAvatar($"{options.First()}.png");
+        }
+
         [Command("version")]
         public async Task Version(params string[] options)
         {
@@ -79,18 +85,14 @@ namespace PerudoBot.Modules
             if (DateTime.Now.Hour < 12) game = _gameHandler.CreateSuddenDeathGame(Context.Channel.Id, Context.Guild.Id);
             else game = _gameHandler.CreateVariableGame(Context.Channel.Id, Context.Guild.Id);
 
-            var commands =
+            var commands = "**Commands**\n" +
                 $"`!add @player`\n" +
-                $"`!start`\n" +
-                $"`!option suddendeath\\variable` to change game modes";
+                $"`!option suddendeath\\variable` to change game modes\n" +
+                $"`!start`";
 
 
-            var builder = new EmbedBuilder()
-                            .WithTitle($"New game created")
-                            .AddField("Commands", commands, inline: false);
-            var embed = builder.Build();
-
-            await Context.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            await ReplyAsync("New game created");
+            await ReplyAsync(commands);
 
             await DisplaySetupGamePlayers(game);
 
@@ -104,7 +106,7 @@ namespace PerudoBot.Modules
                 var image = new Image(fileStream);
                 await Context.Client.CurrentUser.ModifyAsync(u => u.Avatar = image);
             }
-            catch{ }
+            catch { }
         }
 
         [Command("add")]
@@ -121,12 +123,14 @@ namespace PerudoBot.Modules
 
             foreach (var mentionedUser in Context.Message.MentionedUsers)
             {
-                game.AddPlayer(mentionedUser.Id, Context.Guild.Id, mentionedUser.Username, Context.Guild.GetUser(mentionedUser.Id)?.Nickname);
+                var guildUser = Context.Guild.GetUser(mentionedUser.Id);
+
+                game.AddPlayer(mentionedUser.Id, Context.Guild.Id, mentionedUser.Username, guildUser?.Nickname, guildUser?.IsBot ?? false);
             }
 
             if (Context.Message.MentionedUsers.Count == 0)
             {
-                game.AddPlayer(Context.User.Id, Context.Guild.Id, Context.User.Username, Context.Guild.GetUser(Context.User.Id)?.Nickname);
+                game.AddPlayer(Context.User.Id, Context.Guild.Id, Context.User.Username, Context.Guild.GetUser(Context.User.Id)?.Nickname, Context.User.IsBot);
             }
 
 
@@ -145,8 +149,9 @@ namespace PerudoBot.Modules
             if (playerListText == "") playerListText = "No players yet";
 
             var builder = new EmbedBuilder()
-                            .WithTitle($"{gameType} game set up")
-                            .AddField($"Players", $"{playerListText}", inline: false);
+                            .WithTitle($"New Game")
+                            .AddField($"Players", $"{playerListText}", inline: false)
+                            .AddField($"Game Mode", $"{gameType}", inline: false);
 
             var embed = builder.Build();
 
@@ -191,28 +196,43 @@ namespace PerudoBot.Modules
             await SendOutDice(roundStatus.PlayerDice);
             await ReplyAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention()} goes first");
         }
+        [Command("resenddice")]
+        public async Task ResendDice()
+        {
+            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            var playerDice = game.GetPlayerDice();
+            await SendOutDice(playerDice);
+        }
 
         private async Task SendOutDice(List<PlayerDice> playerDice)
         {
-            try
+            foreach (var player in playerDice)
             {
-                foreach (var player in playerDice)
+                // send dice to each player
+                var dice = player.Dice.Split(",");
+                var diceEmojis = dice.Select(x => int.Parse(x).ToEmoji());
+
+
+                var user = Context.Guild.Users.Single(x => x.Id == player.UserId);
+                var user2 = Context.Guild.GetUser(player.UserId);
+
+                if (user.IsBot)
                 {
-                    // send dice to each player
-                    var message = $"Your dice: {player.Dice.Split(",").Select(x => int.Parse(x).ToEmoji())}";
-
-                    var user = Context.Guild.Users.Single(x => x.Id == player.UserId);
-
-
-                    var requestOptions = new RequestOptions()
-                    { RetryMode = RetryMode.RetryRatelimit };
+                    await ReplyAsync($"{player.Name}'s Dice: {string.Join(" ", diceEmojis)}");
+                }
+                else
+                {
+                    var message = $"Your dice: {string.Join(" ", diceEmojis)}";
+                    var requestOptions = new RequestOptions() { RetryMode = RetryMode.RetryRatelimit };
                     await user.SendMessageAsync(message, options: requestOptions);
                 }
             }
-            catch (Exception e)
-            {
-                var monkey = e.Message; // probably a bot
-            }
+        }
+
+        [Command("exact")]
+        public async Task Exact(params string[] bidText)
+        {
+            await ReplyAsync("Exact not implemented.\nIf you can't call liar and can't go up, time to start bluffing!");
         }
 
         [Command("bid")]
