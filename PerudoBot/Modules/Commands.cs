@@ -26,5 +26,23 @@ namespace PerudoBot.Modules
         {
             await ReplyAsync("Pong");
         }
+        private void DeleteCommandFromDiscord(ulong? messageId = null)
+        {
+            try
+            {
+                if (messageId != null)
+                {
+                    _ = Task.Run(() => Context.Channel.DeleteMessageAsync(messageId.Value));
+                }
+                else
+                {
+                    _ = Task.Run(() => Context.Message.DeleteAsync());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
     }
 }

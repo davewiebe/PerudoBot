@@ -214,7 +214,6 @@ namespace PerudoBot.Modules
 
 
                 var user = Context.Guild.Users.Single(x => x.Id == player.UserId);
-                var user2 = Context.Guild.GetUser(player.UserId);
 
                 if (user.IsBot)
                 {
@@ -257,7 +256,7 @@ namespace PerudoBot.Modules
                 await ReplyAsync($"{e.Message}");
                 return;
             }
-
+            DeleteCommandFromDiscord();
             await ReplyAsync($"{currentPlayer.GetMention()} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
         }
 
@@ -271,6 +270,8 @@ namespace PerudoBot.Modules
             if (Context.User.Id != currentPlayer.UserId) return;
 
             var liarResult = game.Liar();
+
+            DeleteCommandFromDiscord();
 
             await ReplyAsync($"{liarResult.PlayerWhoCalledLiar.Name} called **liar** on `{liarResult.BidQuantity}` ˣ {liarResult.BidPips.ToEmoji()}.");
 

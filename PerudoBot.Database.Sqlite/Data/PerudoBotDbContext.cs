@@ -8,6 +8,7 @@ namespace PerudoBot.Database.Data
     {
         public PerudoBotDbContext() : base()
         {
+            Database.Migrate();
         }
 
         public PerudoBotDbContext(DbContextOptions<PerudoBotDbContext> options) : base(options)
