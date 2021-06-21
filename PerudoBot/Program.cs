@@ -4,13 +4,13 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PerudoBot.Database;
 using PerudoBot.Database.Data;
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace PerudoBot
 {
@@ -26,6 +26,7 @@ namespace PerudoBot
         private CommandService _commands;
         private IServiceProvider _services;
         private IConfigurationRoot _configuration;
+        private ILogger<Program> _logger;
 
         public async Task RunBotASync()
         {
@@ -38,28 +39,80 @@ namespace PerudoBot
             _client = new DiscordSocketClient(config);
             _commands = new CommandService();
 
+
+            // Specifying the configuration for serilog
+            Log.Logger = new LoggerConfiguration()
+                            .ReadFrom.Configuration(_configuration)
+                            .Enrich.FromLogContext()
+                            .WriteTo.SQLite(_configuration.GetConnectionString("SerilogDb"))
+                            .WriteTo.Console()
+                            .MinimumLevel.Debug()
+                            .CreateLogger();
+
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_configuration)
+                .AddLogging(configure => configure.AddSerilog())
                 .AddEntityFrameworkSqlite()
+                
                 .AddDbContext<PerudoBotDbContext>(options =>
                     options.UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
                 .BuildServiceProvider();
 
-            var token = _configuration.GetSection("DiscordToken").Value;
 
-            _client.Log += _client_Log;
+            _logger = _services.GetRequiredService<ILogger<Program>>();
+
+            _logger.LogInformation("App Starting");
+
+            var token = _configuration.GetSection("DiscordToken").Value;
+            _client.Log += OnLogAsync;
 
             await RegisterCommandsAsync();
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
+
             await Task.Delay(-1);
         }
 
-        private Task _client_Log(LogMessage arg)
+        private Task OnLogAsync(LogMessage msg)
         {
-            Console.WriteLine(arg);
+            string logText = $": {msg.Exception?.ToString() ?? msg.Message}";
+            switch (msg.Severity.ToString())
+            {
+                case "Critical":
+                    {
+                        _logger.LogCritical(logText);
+                        break;
+                    }
+                case "Warning":
+                    {
+                        _logger.LogWarning(logText);
+                        break;
+                    }
+                case "Info":
+                    {
+                        _logger.LogInformation(logText);
+                        break;
+                    }
+                case "Verbose":
+                    {
+                        _logger.LogInformation(logText);
+                        break;
+                    }
+                case "Debug":
+                    {
+                        _logger.LogDebug(logText);
+                        break;
+                    }
+                case "Error":
+                    {
+                        _logger.LogError(logText);
+                        break;
+                    }
+            }
+
+
             return Task.CompletedTask;
         }
 
@@ -103,7 +156,30 @@ namespace PerudoBot
             }
             if (result != null)
             {
-                if (!result.IsSuccess) Console.WriteLine(result.ErrorReason);
+                if (!result.IsSuccess)
+                {
+
+                    switch (result.Error)
+                    {
+                        case CommandError.BadArgCount:
+                            //await context.Channel.SendMessageAsync("Bad argument count.");
+                            break;
+                        case CommandError.UnknownCommand:
+                            break;
+                        case CommandError.Exception:
+                            if (result is ExecuteResult execResult)
+                            {
+                                //you can now access execResult.Exception to see what happened
+                                _logger.LogError(exception: execResult.Exception, message: execResult.ErrorReason, args: null);
+                            }
+                            break;
+                        default:
+                            _logger.LogError(result.ErrorReason);
+                            break;
+                    }
+                    
+
+                }
             }
         }
 

@@ -26,6 +26,12 @@ namespace PerudoBot.Modules
         {
             await ReplyAsync("Pong");
         }
+
+        [Command("crash")]
+        public async Task Crash()
+        {
+            throw new NullReferenceException("Error message here", new Exception("Inner exception message here"));
+        }
         private void DeleteCommandFromDiscord(ulong? messageId = null)
         {
             try
