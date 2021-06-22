@@ -45,14 +45,16 @@ namespace PerudoBot.Modules
         [Command("bug")]
         public async Task Bug(params string[] options)
         {
-            
-            var responses = new List<string>();
-            responses.Add("It's not a bug, it's a feature!");
-            responses.Add("I think it's actually Discord that's having issues.");
-            responses.Add("We don't know if that's actually a bug yet...");
-            responses.Add("I think this one just comes down to user error.");
-            responses.Add("Wow. Shots fired.");
-            responses.Add($"I can track who's submitting these. Ready for some garbage hands {Context.User.Username}?.");
+
+            var responses = new List<string>
+            {
+                "It's not a bug, it's a feature!",
+                "I think it's actually Discord that's having issues.",
+                "We don't know if that's actually a bug yet...",
+                "I think this one just comes down to user error.",
+                "Wow. Shots fired.",
+                $"I can track who's submitting these. Ready for some garbage hands {Context.User.Username}?."
+            };
 
             await ReplyAsync(responses.OrderBy(x => Guid.NewGuid()).First());
         }
@@ -125,12 +127,26 @@ namespace PerudoBot.Modules
             {
                 var guildUser = Context.Guild.GetUser(mentionedUser.Id);
 
-                game.AddPlayer(mentionedUser.Id, Context.Guild.Id, mentionedUser.Username, guildUser?.Nickname, guildUser?.IsBot ?? false);
+                if (guildUser == null)
+                {
+                    await ReplyAsync($"Unable to get guild info for {mentionedUser.Username}. Was not able to add user.");
+                    continue;
+                }
+                game.AddPlayer(mentionedUser.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, guildUser.IsBot);
             }
 
             if (Context.Message.MentionedUsers.Count == 0)
             {
-                game.AddPlayer(Context.User.Id, Context.Guild.Id, Context.User.Username, Context.Guild.GetUser(Context.User.Id)?.Nickname, Context.User.IsBot);
+                var guildUser = Context.Guild.GetUser(Context.User.Id);
+
+                if (guildUser == null)
+                {
+                    await ReplyAsync($"Unable to get guild info for {Context.User.Username}. Was not able to add user.");
+                }
+                else
+                {
+                    game.AddPlayer(Context.User.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, Context.User.IsBot);
+                }
             }
 
 
@@ -139,7 +155,7 @@ namespace PerudoBot.Modules
 
         private async Task DisplaySetupGamePlayers(GameObject game)
         {
-            var listOfPlayers = game.GetPlayers();
+            var listOfPlayers = game.GetPlayers().Select(x => $"{x.Name}{(x.IsBot ? " :robot:" : "")}").ToList();
 
             var gameType = "Sudden Death";
             if (game.GetMode() == GameMode.Variable) gameType = "Variable";
@@ -191,11 +207,37 @@ namespace PerudoBot.Modules
                 return;
             }
 
-            if (roundStatus.PlayerDice.Count() < 3) await UpdateAvatar("beaten.png");
+            if (roundStatus.PlayerDice.Count < 3) await UpdateAvatar("beaten.png");
 
+            await SendNewRoundStatus(roundStatus);
             await SendOutDice(roundStatus.PlayerDice);
             await ReplyAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention()} goes first");
         }
+
+        private async Task SendNewRoundStatus(RoundStatus roundStatus)
+        {
+            var totalDice = roundStatus.PlayerDice.Sum(x => x.NumberOfDice);
+
+            var players = roundStatus.PlayerDice
+                            .OrderBy(x => x.TurnOrder)
+                            .Select(x => $"`{x.NumberOfDice}` {x.Name}");
+
+            var playerList = string.Join("\n", players);
+
+            var probability = 3.0;
+
+            var quickmaths = $"Quick maths: {totalDice}/{probability:F0} = `{totalDice / probability:F2}`";
+
+            var builder = new EmbedBuilder()
+                .WithTitle($"Round {roundStatus.RoundNumber}")
+                .AddField("Players", $"{playerList}\n\nTotal dice left: `{totalDice}`\n{quickmaths}", inline: false);
+            var embed = builder.Build();
+
+            await Context.Channel.SendMessageAsync(
+                embed: embed)
+                .ConfigureAwait(false);
+        }
+
         [Command("resenddice")]
         public async Task ResendDice()
         {
@@ -291,7 +333,7 @@ namespace PerudoBot.Modules
 
             game.GetPlayerDice();
 
-            var players = game.GetPlayerDice();
+            var players = game.GetPlayerDice().OrderBy(x => x.TurnOrder);
             var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Split(",").Select(x => int.Parse(x).ToEmoji()))}".TrimEnd());
 
             var allDice = players.SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
@@ -303,7 +345,7 @@ namespace PerudoBot.Modules
 
             var listOfAllDiceCounts = allDiceGrouped.Select(x => $"`{x.Count()}` ˣ {x.Key.ToEmoji()}");
 
-            List<string> totals = new List<string>();
+            var totals = new List<string>();
             for (int i = 1; i <= 6; i++)
             {
                 var countOfX = allDiceGrouped.SingleOrDefault(x => x.Key == i)?.Count();

@@ -137,8 +137,7 @@ namespace PerudoBot
 
         private async Task HandleCommandAsync(SocketMessage arg)
         {
-            var message = arg as SocketUserMessage;
-            if (message == null) return;
+            if (arg is not SocketUserMessage message) return;
             var context = new SocketCommandContext(_client, message);
 
             IResult result = null;

@@ -6,7 +6,7 @@ namespace PerudoBot.GameService
 {
     public class GameHandler
     {
-        private PerudoBotDbContext _db;
+        private readonly PerudoBotDbContext _db;
 
         public GameHandler(PerudoBotDbContext db)
         {
