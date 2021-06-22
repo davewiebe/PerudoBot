@@ -177,9 +177,16 @@ namespace PerudoBot.Modules
         [Command("terminate")]
         public async Task Terminate()
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            var game = _gameHandler.GetAnyGame(Context.Channel.Id);
+
+            if (game == null)
+            {
+                await ReplyAsync("No game to terminate");
+                return;
+            }
+
             game.Terminate();
-            await ReplyAsync("Game Terminated");
+            await ReplyAsync("Game terminated");
         }
 
         [Command("start")]

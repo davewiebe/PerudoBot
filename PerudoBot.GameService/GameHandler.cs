@@ -76,6 +76,16 @@ namespace PerudoBot.GameService
             return new GameObject(game, _db);
         }
 
+        public GameObject GetAnyGame(ulong channelId)
+        {
+            var game = _db.Games
+                .Where(x => x.ChannelId == channelId)
+                .OrderBy(x => x.Id)
+                .LastOrDefault();
 
+            if (game == null) return null;
+
+            return new GameObject(game, _db);
+        }
     }
 }

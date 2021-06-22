@@ -10,7 +10,6 @@
     <PackageReference Include="Discord.Net.Commands" Version="2.4.0" />
     <PackageReference Include="Discord.Net.Core" Version="2.4.0" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.7" PrivateAssets="none" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.7" PrivateAssets="none">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,7 +26,6 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.SQLite.NetStandard" Version="1.0.1" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.114.3" PrivateAssets="none" />
   </ItemGroup>
 
   <ItemGroup>
