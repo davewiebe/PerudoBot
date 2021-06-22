@@ -39,7 +39,6 @@ namespace PerudoBot
             _client = new DiscordSocketClient(config);
             _commands = new CommandService();
 
-
             // Specifying the configuration for serilog
             Log.Logger = new LoggerConfiguration()
                             .ReadFrom.Configuration(_configuration)
@@ -55,14 +54,12 @@ namespace PerudoBot
                 .AddSingleton(_configuration)
                 .AddLogging(configure => configure.AddSerilog())
                 .AddEntityFrameworkSqlite()
-                
                 .AddDbContext<PerudoBotDbContext>(options =>
                     options.UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
                 .BuildServiceProvider();
 
 
             _logger = _services.GetRequiredService<ILogger<Program>>();
-
             _logger.LogInformation("App Starting");
 
             var token = _configuration.GetSection("DiscordToken").Value;
