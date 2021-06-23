@@ -269,6 +269,8 @@ namespace PerudoBot.GameService
                 .ThenInclude(x => x.Actions)
                 .Include(x => x.GamePlayers)
                 .ThenInclude(x => x.GamePlayerRounds)
+                .Include(x => x.GamePlayers)
+                .ThenInclude(x => x.Player)
                 .Single(x => x.Id == _gameId);
 
 

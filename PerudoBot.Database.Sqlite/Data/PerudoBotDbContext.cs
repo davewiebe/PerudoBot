@@ -12,7 +12,8 @@ namespace PerudoBot.Database.Data
         }
 
         public PerudoBotDbContext(DbContextOptions<PerudoBotDbContext> options) : base(options)
-        { }
+        {
+        }
 
         public DbSet<Game> Games { get; set; }
 
@@ -52,7 +53,9 @@ namespace PerudoBot.Database.Data
                     .Build();
 
                 var connectionString = configuration.GetConnectionString("PerudoBotDb");
-                optionsBuilder.UseSqlite(connectionString);
+                optionsBuilder
+                    .UseLazyLoadingProxies()
+                    .UseSqlite(connectionString);
             }
         }
     }
