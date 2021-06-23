@@ -24,6 +24,19 @@ namespace PerudoBot.GameService
             return _gameId;
         }
 
+        public bool RemovePlayer(ulong userId)
+        {
+            var gamePlayer = _db.GamePlayers
+                            .Where(x => x.GameId == _gameId)
+                            .Single(x => x.Player.UserId == userId);
+
+            if (gamePlayer == null) return false;
+
+            _db.GamePlayers.Remove(gamePlayer);
+            _db.SaveChanges();
+            return true;
+        }
+
         public bool AddPlayer(ulong userId, ulong guildId, string name, bool isBot)
         {
             if (string.IsNullOrEmpty(name)) return false;
@@ -319,7 +332,7 @@ namespace PerudoBot.GameService
             return 5;
         }
 
-        public object GetCurrentRoundNumber()
+        public int GetCurrentRoundNumber()
         {
             return _db.Games
                 .Include(x => x.Rounds)
@@ -400,115 +413,6 @@ namespace PerudoBot.GameService
                 IsBot = x.GamePlayer.Player.IsBot,
                 TurnOrder = x.GamePlayer.TurnOrder
             }).ToList();
-        }
-    }
-
-    public class PlayerDice
-    {
-        public string Name { get; set; }
-        public ulong UserId { get; set; }
-        public string Dice { get; set; }
-        public bool IsBot { get; set; }
-        public int NumberOfDice { get; internal set; }
-        public int TurnOrder { get; internal set; }
-
-        public PlayerDice()
-        {
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is PlayerDice other &&
-                   Name == other.Name &&
-                   UserId == other.UserId &&
-                   Dice == other.Dice;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Name, UserId, Dice);
-        }
-    }
-
-    public class PlayerObject
-    {
-        public int NumberOfDice { get; internal set; }
-        public bool IsBot { get; internal set; }
-        public string Name { get; internal set; }
-        public ulong UserId { get; internal set; }
-
-        public PlayerObject()
-        {
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is PlayerObject other &&
-                   NumberOfDice == other.NumberOfDice &&
-                   IsBot == other.IsBot &&
-                   Name == other.Name &&
-                   UserId == other.UserId;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(NumberOfDice, IsBot, Name, UserId);
-        }
-    }
-
-    public class LiarResult
-    {
-        public bool IsSuccessful { get; set; }
-        public int DiceLost { get; set; }
-        public PlayerObject PlayerWhoBidLast { get; set; }
-        public PlayerObject PlayerWhoCalledLiar { get; set; }
-        public PlayerObject PlayerWhoLostDice { get; set; }
-        public int BidQuantity { get; internal set; }
-        public int ActualQuantity { get; internal set; }
-        public int BidPips { get; internal set; }
-
-        public LiarResult()
-        {
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is LiarResult other &&
-                   IsSuccessful == other.IsSuccessful &&
-                   DiceLost == other.DiceLost &&
-                   EqualityComparer<PlayerObject>.Default.Equals(PlayerWhoBidLast, other.PlayerWhoBidLast) &&
-                   EqualityComparer<PlayerObject>.Default.Equals(PlayerWhoCalledLiar, other.PlayerWhoCalledLiar) &&
-                   EqualityComparer<PlayerObject>.Default.Equals(PlayerWhoLostDice, other.PlayerWhoLostDice);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(IsSuccessful, DiceLost, PlayerWhoBidLast, PlayerWhoCalledLiar, PlayerWhoLostDice);
-        }
-    }
-
-    public class RoundStatus
-    {
-        public bool IsActive { get; set; }
-        public List<PlayerDice> PlayerDice { get; set; }
-        public PlayerObject Winner { get; set; }
-        public int RoundNumber { get; internal set; }
-
-        public RoundStatus()
-        {
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is RoundStatus other &&
-                   IsActive == other.IsActive &&
-                   EqualityComparer<List<PlayerDice>>.Default.Equals(PlayerDice, other.PlayerDice) &&
-                   EqualityComparer<PlayerObject>.Default.Equals(Winner, other.Winner);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(IsActive, PlayerDice, Winner);
         }
     }
 }

@@ -57,7 +57,7 @@ namespace PerudoBot.GameService
                 .Where(x => x.ChannelId == channelId)
                 .Where(x => x.State == (int)GameState.Setup)
                 .OrderBy(x => x.Id)
-                .LastOrDefault();
+                .SingleOrDefault();
 
             if (game == null) return null;
 
@@ -69,17 +69,19 @@ namespace PerudoBot.GameService
                 .Where(x => x.ChannelId == channelId)
                 .Where(x => x.State == (int)GameState.InProgress)
                 .OrderBy(x => x.Id)
-                .LastOrDefault();
+                .SingleOrDefault();
 
             if (game == null) return null;
 
             return new GameObject(game, _db);
         }
 
-        public GameObject GetAnyGame(ulong channelId)
+        public GameObject GetActiveGame(ulong channelId)
         {
             var game = _db.Games
                 .Where(x => x.ChannelId == channelId)
+                .Where(x => x.State == (int)(object)GameState.InProgress
+                        || x.State == (int)(object)GameState.Setup)
                 .OrderBy(x => x.Id)
                 .LastOrDefault();
 

@@ -111,6 +111,28 @@ namespace PerudoBot.Modules
             catch { }
         }
 
+
+        [Command("remove")]
+        [Alias("r")]
+        public async Task RemovePlayer(params string[] users)
+        {
+            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
+
+            if (game == null)
+            {
+                await ReplyAsync("No game is being set up");
+                return;
+            }
+
+            foreach (var mentionedUser in Context.Message.MentionedUsers)
+            {
+                game.RemovePlayer(mentionedUser.Id);
+            }
+
+            await DisplaySetupGamePlayers(game);
+        }
+
+
         [Command("add")]
         [Alias("a")]
         public async Task AddPlayer(params string[] users)
@@ -177,7 +199,7 @@ namespace PerudoBot.Modules
         [Command("terminate")]
         public async Task Terminate()
         {
-            var game = _gameHandler.GetAnyGame(Context.Channel.Id);
+            var game = _gameHandler.GetActiveGame(Context.Channel.Id);
 
             if (game == null)
             {
