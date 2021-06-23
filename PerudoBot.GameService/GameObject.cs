@@ -8,7 +8,7 @@ using Action = PerudoBot.Database.Data.Action;
 
 namespace PerudoBot.GameService
 {
-    public class GameObject
+    public sealed class GameObject : IGameObject
     {
         private readonly int _gameId;
         private readonly PerudoBotDbContext _db;
