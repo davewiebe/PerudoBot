@@ -14,10 +14,19 @@ namespace PerudoBot.Modules
 {
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
+        private async Task<IUserMessage> SendMessageAsync(string message, bool isTTS = false)
+        {
+            if (string.IsNullOrEmpty(message)) return null;
+
+            var requestOptions = new RequestOptions()
+            { RetryMode = RetryMode.RetryRatelimit };
+            return await base.ReplyAsync(message, options: requestOptions, isTTS: isTTS);
+        }
+
         [Command("updateavatar")]
         public async Task UpdateAvatarCommand(params string[] options)
         {
-            await UpdateAvatar($"{options.First()}.png");
+            //await UpdateAvatar($"{options.First()}.png");
         }
 
         [Command("version")]
@@ -56,7 +65,7 @@ namespace PerudoBot.Modules
                 $"I can track who's submitting these. Ready for some garbage hands {Context.User.Username}?."
             };
 
-            await ReplyAsync(responses.OrderBy(x => Guid.NewGuid()).First());
+            await SendMessageAsync(responses.OrderBy(x => Guid.NewGuid()).First());
         }
 
         [Command("option")]
@@ -80,12 +89,20 @@ namespace PerudoBot.Modules
         [Command("new")]
         public async Task NewGameAsync(params string[] options)
         {
-            await UpdateAvatar("gamestart.png");
 
             GameObject game;
 
             if (DateTime.Now.Hour < 12) game = _gameHandler.CreateSuddenDeathGame(Context.Channel.Id, Context.Guild.Id);
             else game = _gameHandler.CreateVariableGame(Context.Channel.Id, Context.Guild.Id);
+
+            if(game == null)
+            {
+                await SendMessageAsync("Game in progress already");
+                return;
+            }
+
+
+            await UpdateAvatar("gamestart.png");
 
             var commands = "**Commands**\n" +
                 $"`!add @player`\n" +
@@ -93,8 +110,8 @@ namespace PerudoBot.Modules
                 $"`!start`";
 
 
-            await ReplyAsync("New game created");
-            await ReplyAsync(commands);
+            await SendMessageAsync("New game created");
+            await SendMessageAsync(commands);
 
             await DisplaySetupGamePlayers(game);
 
@@ -120,7 +137,7 @@ namespace PerudoBot.Modules
 
             if (game == null)
             {
-                await ReplyAsync("No game is being set up");
+                await SendMessageAsync("No game is being set up");
                 return;
             }
 
@@ -141,7 +158,7 @@ namespace PerudoBot.Modules
 
             if (game == null)
             {
-                await ReplyAsync("No game is being set up");
+                await SendMessageAsync("No game is being set up");
                 return;
             }
 
@@ -151,7 +168,7 @@ namespace PerudoBot.Modules
 
                 if (guildUser == null)
                 {
-                    await ReplyAsync($"Unable to get guild info for {mentionedUser.Username}. Was not able to add user.");
+                    await SendMessageAsync($"Unable to get guild info for {mentionedUser.Username}. Was not able to add user.");
                     continue;
                 }
                 game.AddPlayer(mentionedUser.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, guildUser.IsBot);
@@ -163,7 +180,7 @@ namespace PerudoBot.Modules
 
                 if (guildUser == null)
                 {
-                    await ReplyAsync($"Unable to get guild info for {Context.User.Username}. Was not able to add user.");
+                    await SendMessageAsync($"Unable to get guild info for {Context.User.Username}. Was not able to add user.");
                 }
                 else
                 {
@@ -203,12 +220,12 @@ namespace PerudoBot.Modules
 
             if (game == null)
             {
-                await ReplyAsync("No game to terminate");
+                await SendMessageAsync("No game to terminate");
                 return;
             }
 
             game.Terminate();
-            await ReplyAsync("Game terminated");
+            await SendMessageAsync("Game terminated");
         }
 
         [Command("start")]
@@ -218,7 +235,7 @@ namespace PerudoBot.Modules
 
             var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
 
-            await ReplyAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
+            await SendMessageAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
 
             game.Start();
 
@@ -231,7 +248,7 @@ namespace PerudoBot.Modules
 
             if (roundStatus.IsActive == false)
             {
-                await ReplyAsync($":trophy: {roundStatus.Winner.GetMention()} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
+                await SendMessageAsync($":trophy: {roundStatus.Winner.GetMention()} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
                 await UpdateAvatar("coy.png");
                 return;
             }
@@ -240,7 +257,7 @@ namespace PerudoBot.Modules
 
             await SendNewRoundStatus(roundStatus);
             await SendOutDice(roundStatus.PlayerDice);
-            await ReplyAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention()} goes first");
+            await SendMessageAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention()} goes first");
         }
 
         private async Task SendNewRoundStatus(RoundStatus roundStatus)
@@ -288,7 +305,7 @@ namespace PerudoBot.Modules
 
                 if (user.IsBot)
                 {
-                    await ReplyAsync($"{player.Name}'s Dice: {string.Join(" ", diceEmojis)}");
+                    await SendMessageAsync($"{player.Name}'s Dice: {string.Join(" ", diceEmojis)}");
                 }
                 else
                 {
@@ -302,7 +319,42 @@ namespace PerudoBot.Modules
         [Command("exact")]
         public async Task Exact(params string[] bidText)
         {
-            await ReplyAsync("Exact not implemented.\nIf you can't call liar and can't go up, time to start bluffing!");
+            await SendMessageAsync("Exact not implemented.\nIf you can't call liar and can't go up, time to start bluffing!");
+        }
+
+
+        [Command("bidr")]
+        [Alias("br", "dib", "rbid", "rb")]
+        public async Task BidReverse(params string[] bidText)
+        {
+            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+
+            var currentPlayer = game.GetCurrentPlayer();
+
+            if (Context.User.Id != currentPlayer.UserId) return;
+
+            var quantity = int.Parse(bidText[0]);
+            var pips = int.Parse(bidText[1].Trim('s'));
+
+            try
+            {
+                var result = game.BidReverse(quantity, pips);
+                if (result == false)
+                {
+
+                    await SendMessageAsync($"Cannot reverse bid after first bid");
+                    return;
+                }
+                DeleteCommandFromDiscord();
+                await SendMessageAsync($"Player order *REVERSED*");
+                await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                await SendMessageAsync($"{e.Message}");
+                return;
+            }
+
         }
 
         [Command("bid")]
@@ -311,6 +363,7 @@ namespace PerudoBot.Modules
         {
             var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
 
+            if (game == null) return;
             var currentPlayer = game.GetCurrentPlayer();
 
             if (Context.User.Id != currentPlayer.UserId) return;
@@ -324,11 +377,11 @@ namespace PerudoBot.Modules
             }
             catch (ArgumentOutOfRangeException e)
             {
-                await ReplyAsync($"{e.Message}");
+                await SendMessageAsync($"{e.Message}");
                 return;
             }
             DeleteCommandFromDiscord();
-            await ReplyAsync($"{currentPlayer.GetMention()} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
+            await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
         }
 
         [Command("liar")]
@@ -344,12 +397,12 @@ namespace PerudoBot.Modules
 
             DeleteCommandFromDiscord();
 
-            await ReplyAsync($"{liarResult.PlayerWhoCalledLiar.Name} called **liar** on `{liarResult.BidQuantity}` ˣ {liarResult.BidPips.ToEmoji()}.");
+            await SendMessageAsync($"{liarResult.PlayerWhoCalledLiar.Name} called **liar** on `{liarResult.BidQuantity}` ˣ {liarResult.BidPips.ToEmoji()}.");
 
             // for dramatic effect
             Thread.Sleep(3000);
 
-            await ReplyAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention()} loses {liarResult.DiceLost} dice. :fire:");
+            await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention()} loses {liarResult.DiceLost} dice. :fire:");
 
             await SendRoundSummary();
 

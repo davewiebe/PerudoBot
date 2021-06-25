@@ -26,7 +26,7 @@ namespace PerudoBot.Database.Data
 
 
         [NotMapped]
-        public GamePlayer CurrentGamePlayer => GamePlayers.SingleOrDefault(x => x.PlayerId == GamePlayerTurnId);
+        public GamePlayer CurrentGamePlayer => GamePlayers.SingleOrDefault(x => x.Id == GamePlayerTurnId);
 
         [NotMapped]
         public Round CurrentRound => Rounds.LastOrDefault();

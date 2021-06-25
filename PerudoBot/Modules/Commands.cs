@@ -24,7 +24,7 @@ namespace PerudoBot.Modules
         [Alias("p")]
         public async Task Ping()
         {
-            await ReplyAsync("Pong");
+            await SendMessageAsync("Pong");
         }
 
         [Command("crash")]

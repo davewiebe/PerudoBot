@@ -103,7 +103,7 @@ namespace PerudoBot.GameService
                 .ThenInclude(x => x.Player)
                 .Single(x => x.Id == _gameId);
             
-            return game.GamePlayers.Select(x => x.ToPlayerObject()).ToList();
+            return game.GamePlayers.Select(x => x.ToPlayerObject()).OrderBy(x => x.Name).ToList();
         }
 
         public string GetMode()
@@ -213,7 +213,15 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
         }
 
-        public void Bid(int quantity, int pips)
+        public bool BidReverse(int quantity, int pips)
+        {
+            return Bid(quantity, pips, true);
+        }
+        public bool Bid(int quantity, int pips)
+        {
+            return Bid(quantity, pips, false);
+        }
+        private bool Bid(int quantity, int pips, bool reverse = false)
         {
             var game = _db.Games
                 .Include(x => x.Rounds)
@@ -241,6 +249,20 @@ namespace PerudoBot.GameService
                     }
                 }
             }
+            if (reverse)
+            {
+                if (previousBid != null)
+                {
+                    return false;
+                }
+
+                var turnOrder = 1;
+                foreach (var gamePlayer in game.GamePlayers.OrderByDescending(x => x.TurnOrder))
+                {
+                    gamePlayer.TurnOrder = turnOrder;
+                    turnOrder += 1;
+                }
+            }
 
 
             var newBid = new Bid
@@ -252,13 +274,15 @@ namespace PerudoBot.GameService
                 GamePlayer = game.CurrentGamePlayer,
                 GamePlayerRound = game.CurrentGamePlayer.CurrentGamePlayerRound,
             };
-
+            _db.SaveChanges();
             game.GamePlayerTurnId = GetNextActiveGamePlayerId();
 
             _db.Games.Single(x => x.Id == _gameId)
                 .CurrentRound.Actions.Add(newBid);
 
             _db.SaveChanges();
+
+            return true;
         }
 
 
@@ -365,36 +389,37 @@ namespace PerudoBot.GameService
 
         public PlayerObject GetCurrentPlayer()
         {
-            var currentGamePlayer = _db.Games
+            var game = _db.Games
                 .Include(x => x.GamePlayers)
                 .ThenInclude(x => x.Player)
-                .Single(x => x.Id == _gameId)
-                .CurrentGamePlayer;
+                .Single(x => x.Id == _gameId);
+
+            var currentGamePlayer = game.CurrentGamePlayer;
 
             return currentGamePlayer.ToPlayerObject();
         }
 
         private int GetNextActiveGamePlayerId()
         {
-            var currentPlayerId = _db.Games.Single(x => x.Id == _gameId).GamePlayerTurnId;
+            var currentGamePlayerId = _db.Games.Single(x => x.Id == _gameId).GamePlayerTurnId;
 
-            var playerIds = _db.GamePlayers
+            var gamePlayerIds = _db.GamePlayers
                 .AsQueryable()
                 .Where(x => x.GameId == _gameId)
-                .Where(x => x.NumberOfDice > 0 || x.Id == currentPlayerId) // in case the current user is eliminated and won't show up
+                .Where(x => x.NumberOfDice > 0 || x.Id == currentGamePlayerId) // in case the current user is eliminated and won't show up
                 .OrderBy(x => x.TurnOrder)
                 .Select(x => x.Id)
                 .ToList();
 
-            var playerIndex = playerIds.FindIndex(x => x == currentPlayerId);
+            var playerIndex = gamePlayerIds.FindIndex(x => x == currentGamePlayerId);
 
-            if (playerIndex >= playerIds.Count - 1)
+            if (playerIndex >= gamePlayerIds.Count - 1)
             {
-                return playerIds.ElementAt(0);
+                return gamePlayerIds.ElementAt(0);
             }
             else
             {
-                return playerIds.ElementAt(playerIndex + 1);
+                return gamePlayerIds.ElementAt(playerIndex + 1);
             }
         }
 

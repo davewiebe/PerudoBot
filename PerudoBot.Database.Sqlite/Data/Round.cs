@@ -17,7 +17,8 @@ namespace PerudoBot.Database.Data
         public virtual Game Game { get; set; }
         public ICollection<Action> Actions { get; set; }
         public ICollection<GamePlayerRound> GamePlayerRounds { get; set; }
-        public int StartingPlayerId { get; set; }
+
+        public int StartingPlayerId { get; set; } // GamePlayerId
 
         //Discriminator Column
         public string RoundType { get; private set; }

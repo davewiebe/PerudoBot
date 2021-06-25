@@ -54,7 +54,7 @@ namespace PerudoBot.Database.Data
 
                 var connectionString = configuration.GetConnectionString("PerudoBotDb");
                 optionsBuilder
-                    .UseLazyLoadingProxies()
+                    //.UseLazyLoadingProxies()
                     .UseSqlite(connectionString);
             }
         }
