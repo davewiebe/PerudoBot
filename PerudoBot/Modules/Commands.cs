@@ -18,7 +18,31 @@ namespace PerudoBot.Modules
             _db = new PerudoBotDbContext();
             _gameHandler = new GameHandler(_db);
         }
+        private async Task<IUserMessage> SendMessageAsync(string message, bool isTTS = false)
+        {
+            if (string.IsNullOrEmpty(message)) return null;
 
+            var requestOptions = new RequestOptions()
+            { RetryMode = RetryMode.RetryRatelimit };
+            return await base.ReplyAsync(message, options: requestOptions, isTTS: isTTS);
+        }
+
+        [Command("updateavatar")]
+        public async Task UpdateAvatarCommand(params string[] options)
+        {
+            //await UpdateAvatar($"{options.First()}.png");
+        }
+
+        private async Task UpdateAvatar(string avatarName)
+        {
+            try
+            {
+                var fileStream = new FileStream(Directory.GetCurrentDirectory() + $"/Avatars/{avatarName}", FileMode.Open);
+                var image = new Image(fileStream);
+                await Context.Client.CurrentUser.ModifyAsync(u => u.Avatar = image);
+            }
+            catch { }
+        }
 
         [Command("ping")]
         [Alias("p")]
