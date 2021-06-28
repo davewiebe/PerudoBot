@@ -14,15 +14,23 @@ namespace PerudoBot.Modules
         [Command("start")]
         public async Task StartGame()
         {
+            SetGuildAndChannel();
+
             await UpdateAvatar("wink.png");
 
-            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
+            var game = _gameHandler.CreateGame();
 
             await SendMessageAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
 
             game.Start();
 
             await StartNewRound(game);
+        }
+
+        private void SetGuildAndChannel()
+        {
+            _gameHandler.SetChannel(Context.Channel.Id);
+            _gameHandler.SetGuild(Context.Guild.Id);
         }
 
         private async Task StartNewRound(GameObject game)
@@ -70,7 +78,8 @@ namespace PerudoBot.Modules
         [Command("resenddice")]
         public async Task ResendDice()
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            _gameHandler.SetChannel(Context.Channel.Id);
+            var game = _gameHandler.GetActiveGame();
             var playerDice = game.GetPlayerDice();
             await SendOutDice(playerDice);
         }

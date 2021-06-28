@@ -1,93 +1,127 @@
 ﻿using System;
 using System.Linq;
 using PerudoBot.Database.Data;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
 
 namespace PerudoBot.GameService
 {
     public class GameHandler
     {
         private readonly PerudoBotDbContext _db;
+        private readonly IMemoryCache _cache;
+        private ulong _channelId;
+        private ulong _guildId;
 
-        public GameHandler(PerudoBotDbContext db)
+        /*
+*  Do all the user handling and setup for the game here
+*  Save it all in cache, 
+*  and then use it all when starting the game
+*/
+
+        // probably not safe with multiple channels yet
+
+        public GameHandler(PerudoBotDbContext db, IMemoryCache cache)
         {
             _db = db;
+            _cache = cache;
         }
 
-        public GameObject CreateVariableGame(ulong channelId, ulong guildId)
+        public List<GamePlayerDto> AddPlayer(ulong userId, ulong guildId, string name, bool isBot)
         {
-            return CreateGame(channelId, guildId, GameMode.Variable);
+            var gameplayers = (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
+
+            if (gameplayers == null) gameplayers = new List<GamePlayerDto>();
+
+            gameplayers.Add(new GamePlayerDto { Name = name, UserId = userId, GuildId = guildId, IsBot = isBot });
+
+            _cache.Set($"gameplayers{_channelId}", gameplayers);
+            return gameplayers;
         }
 
-        public GameObject CreateSuddenDeathGame(ulong channelId, ulong guildId)
+        public void SetGuild(ulong guildId)
         {
-            return CreateGame(channelId, guildId, GameMode.SuddenDeath);
+            _guildId = guildId;
         }
 
-        private GameObject CreateGame(ulong channelId, ulong guildId, string gameMode)
+        public void SetGameModeSuddenDeath()
         {
-            if (_db.Games
-                .Where(x => x.ChannelId == channelId)
-                .Where(x => x.State == (int)(object)GameState.InProgress
-                        || x.State == (int)(object)GameState.Setup)
-               .Any())
+            _cache.Set($"gamemode{_channelId}", "suddendeath");
+        }
+        public void SetGameModeVariable()
+        {
+            _cache.Set($"gamemode{_channelId}", "variable");
+        }
+
+        public GameObject CreateGame()
+        {
+            var game = GetActiveGame();
+            if (game != null) return null;
+
+            game = new GameObject(_db, _channelId);
+            game.CreateGame(_guildId);
+
+            var gameplayers = GetSetupPlayers();
+            foreach (var player in gameplayers)
             {
-                string message = $"A game already being set up or is in progress.";
-                return null; // how do we output this information... error message I guess?
+                game.AddPlayer(player.UserId, player.GuildId, player.Name, player.IsBot);
             }
+            
+            var gamemode = (string)_cache.Get($"gamemode{_channelId}");
 
-            var game = new Game
+            if (gamemode == "suddendeath") game.SetModeSuddenDeath();
+            if (gamemode == "variable") game.SetModeVariable();
+
+            return game;
+        }
+
+        public GameObject GetActiveGame()
+        {
+            var game = new GameObject(_db, _channelId);
+            game.LoadActiveGame();
+            if (game.IsInProgress()) return game;
+            return null;
+        }
+
+        public void SetChannel(ulong channelId)
+        {
+            _channelId = channelId;
+        }
+
+        public List<GamePlayerDto> GetSetupPlayers()
+        {
+            var gamePlayers = (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
+            if (gamePlayers == null) return new List<GamePlayerDto>();
+            return (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
+        }
+
+        public void Terminate()
+        {
+            var inProgressGames = _db.Games.Where(x => x.ChannelId == _channelId)
+                .Where(x => x.State == (int)GameState.InProgress);
+
+            foreach (var game in inProgressGames)
             {
-                ChannelId = channelId,
-                State = (int)(object)GameState.Setup,
-                GuildId = guildId,
-                Mode = gameMode
-            };
-
-
-            _db.Games.Add(game);
+                game.State = (int)GameState.Terminated;
+            } 
             _db.SaveChanges();
-
-            var gameObject = new GameObject(game, _db);
-
-            return gameObject;
         }
-        public GameObject GetSettingUpGame(ulong channelId)
+
+        public string GetMode()
         {
-            var game = _db.Games
-                .Where(x => x.ChannelId == channelId)
-                .Where(x => x.State == (int)GameState.Setup)
-                .OrderBy(x => x.Id)
-                .SingleOrDefault();
+            var gamemode = (string)_cache.Get($"gamemode{_channelId}");
 
-            if (game == null) return null;
-
-            return new GameObject(game, _db);
+            if (gamemode == "suddendeath") return GameMode.SuddenDeath;
+            if (gamemode == "variable") return GameMode.Variable;
+            return "";
         }
-        public GameObject GetInProgressGame(ulong channelId)
-        {
-            var game = _db.Games
-                .Where(x => x.ChannelId == channelId)
-                .Where(x => x.State == (int)GameState.InProgress)
-                .OrderBy(x => x.Id)
-                .SingleOrDefault();
+    }
 
-            if (game == null) return null;
-
-            return new GameObject(game, _db);
-        }
-
-        public GameObject GetActiveGame(ulong channelId)
-        {
-            var game = _db.Games
-                .Where(x => x.ChannelId == channelId)
-                .Where(x => x.State == (int)(object)GameState.InProgress
-                        || x.State == (int)(object)GameState.Setup)
-                .OrderBy(x => x.Id)
-                .LastOrDefault();
-
-            if (game == null) return null;
-
-            return new GameObject(game, _db);
-        }
+    public class GamePlayerDto
+    {
+        public ulong UserId { get; set; }
+        public string Name { get; set; }
+        public ulong GuildId { get; internal set; }
+        public bool IsBot { get; internal set; }
     }
 }

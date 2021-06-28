@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using PerudoBot.Extensions;
+using PerudoBot.GameService;
 using System;
 using System.Threading.Tasks;
 
@@ -13,7 +14,8 @@ namespace PerudoBot.Modules
         [Alias("br", "dib", "rbid", "rb")]
         public async Task BidReverse(params string[] bidText)
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
 
             var currentPlayer = game.GetCurrentPlayer();
 
@@ -47,9 +49,10 @@ namespace PerudoBot.Modules
         [Alias("b")]
         public async Task Bid(params string[] bidText)
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
 
-            if (game == null) return;
+            //if (game == null) return;
             var currentPlayer = game.GetCurrentPlayer();
 
             if (Context.User.Id != currentPlayer.UserId) return;

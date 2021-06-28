@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Serilog;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace PerudoBot
 {
@@ -48,7 +49,9 @@ namespace PerudoBot
                             .MinimumLevel.Debug()
                             .CreateLogger();
 
+            var memory = new MemoryCache(new MemoryCacheOptions());
             _services = new ServiceCollection()
+                .AddMemoryCache()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_configuration)

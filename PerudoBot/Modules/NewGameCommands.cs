@@ -17,17 +17,18 @@ namespace PerudoBot.Modules
         [Command("new")]
         public async Task NewGameAsync(params string[] options)
         {
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
 
-            GameObject game;
-
-            if (DateTime.Now.Hour < 12) game = _gameHandler.CreateSuddenDeathGame(Context.Channel.Id, Context.Guild.Id);
-            else game = _gameHandler.CreateVariableGame(Context.Channel.Id, Context.Guild.Id);
-
-            if(game == null)
+            if (game != null)
             {
                 await SendMessageAsync("Game in progress already");
                 return;
             }
+
+            if (DateTime.Now.Hour < 12) _gameHandler.SetGameModeSuddenDeath();
+            else _gameHandler.SetGameModeVariable();
+
 
             await UpdateAvatar("gamestart.png");
 
@@ -39,59 +40,52 @@ namespace PerudoBot.Modules
             await SendMessageAsync("New game created");
             await SendMessageAsync(commands);
 
-            await DisplaySetupGamePlayers(game);
+            await DisplaySetupGamePlayers();
         }
 
         [Command("option")]
         [Alias("options")]
         public async Task Options(params string[] options)
         {
-            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
+            SetGuildAndChannel();
 
             if (options.Any(x => x.ToLower() == "suddendeath"))
             {
-                game.SetModeSuddenDeath();
+                _gameHandler.SetGameModeSuddenDeath();
             }
             else if (options.Any(x => x.ToLower() == "variable"))
             {
-                game.SetModeVariable();
+                _gameHandler.SetGameModeVariable();
             }
 
-            await DisplaySetupGamePlayers(game);
+            await DisplaySetupGamePlayers();
         }
 
         [Command("remove")]
         [Alias("r")]
         public async Task RemovePlayer(params string[] users)
         {
-            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
+            //_gameObject.GetGame(Context.Channel.Id);
 
-            if (game == null)
-            {
-                await SendMessageAsync("No game is being set up");
-                return;
-            }
+            ////if (game == null)
+            ////{
+            ////    await SendMessageAsync("No game is being set up");
+            ////    return;
+            ////}
 
-            foreach (var mentionedUser in Context.Message.MentionedUsers)
-            {
-                game.RemovePlayer(mentionedUser.Id);
-            }
+            //foreach (var mentionedUser in Context.Message.MentionedUsers)
+            //{
+            //    _gameObject.RemovePlayer(mentionedUser.Id);
+            //}
 
-            await DisplaySetupGamePlayers(game);
+            //await DisplaySetupGamePlayers(_gameObject);
         }
 
         [Command("add")]
         [Alias("a")]
         public async Task AddPlayer(params string[] users)
         {
-            var game = _gameHandler.GetSettingUpGame(Context.Channel.Id);
-
-            if (game == null)
-            {
-                await SendMessageAsync("No game is being set up");
-                return;
-            }
-
+            SetGuildAndChannel();
             foreach (var mentionedUser in Context.Message.MentionedUsers)
             {
                 var guildUser = Context.Guild.GetUser(mentionedUser.Id);
@@ -101,7 +95,7 @@ namespace PerudoBot.Modules
                     await SendMessageAsync($"Unable to get guild info for {mentionedUser.Username}. Was not able to add user.");
                     continue;
                 }
-                game.AddPlayer(mentionedUser.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, guildUser.IsBot);
+                _gameHandler.AddPlayer(mentionedUser.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, guildUser.IsBot);
             }
 
             if (Context.Message.MentionedUsers.Count == 0)
@@ -114,19 +108,21 @@ namespace PerudoBot.Modules
                 }
                 else
                 {
-                    game.AddPlayer(Context.User.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, Context.User.IsBot);
+                    _gameHandler.AddPlayer(Context.User.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, Context.User.IsBot);
                 }
             }
 
-            await DisplaySetupGamePlayers(game);
+            await DisplaySetupGamePlayers();
         }
 
-        private async Task DisplaySetupGamePlayers(GameObject game)
+        private async Task DisplaySetupGamePlayers()
         {
-            var listOfPlayers = game.GetPlayers().Select(x => $"{x.Name}{(x.IsBot ? " :robot:" : "")}").ToList();
+            var gamePlayers = _gameHandler.GetSetupPlayers();
+
+            var listOfPlayers = gamePlayers.Select(x => $"{x.Name}{(x.IsBot ? " :robot:" : "")}").ToList();
 
             var gameType = "Sudden Death";
-            if (game.GetMode() == GameMode.Variable) gameType = "Variable";
+            if (_gameHandler.GetMode() == GameMode.Variable) gameType = "Variable";
 
 
             var playerListText = string.Join("\n", listOfPlayers);
@@ -145,18 +141,10 @@ namespace PerudoBot.Modules
         [Command("terminate")]
         public async Task Terminate()
         {
-            var game = _gameHandler.GetActiveGame(Context.Channel.Id);
-
-            if (game == null)
-            {
-                await SendMessageAsync("No game to terminate");
-                return;
-            }
-
-            game.Terminate();
+            SetGuildAndChannel();
+            _gameHandler.Terminate();
             await SendMessageAsync("Game terminated");
         }
-
 
         [Command("exact")]
         public async Task Exact(params string[] bidText)

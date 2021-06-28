@@ -14,7 +14,8 @@ namespace PerudoBot.Modules
         [Command("liar")]
         public async Task Liar()
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
 
             var currentPlayer = game.GetCurrentPlayer();
 
@@ -38,9 +39,7 @@ namespace PerudoBot.Modules
 
         private async Task SendRoundSummary()
         {
-            var game = _gameHandler.GetInProgressGame(Context.Channel.Id);
-
-            game.GetPlayerDice();
+            var game = _gameHandler.GetActiveGame();
 
             var players = game.GetPlayerDice().OrderBy(x => x.TurnOrder);
             var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Split(",").Select(x => int.Parse(x).ToEmoji()))}".TrimEnd());
