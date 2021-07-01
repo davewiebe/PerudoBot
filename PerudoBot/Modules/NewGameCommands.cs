@@ -29,6 +29,7 @@ namespace PerudoBot.Modules
             if (DateTime.Now.Hour < 12) _gameHandler.SetGameModeSuddenDeath();
             else _gameHandler.SetGameModeVariable();
 
+            _gameHandler.ClearPlayerList();
 
             await UpdateAvatar("gamestart.png");
 
@@ -86,6 +87,10 @@ namespace PerudoBot.Modules
         public async Task AddPlayer(params string[] users)
         {
             SetGuildAndChannel();
+
+            var game = _gameHandler.GetActiveGame();
+            if (game != null) return;
+
             foreach (var mentionedUser in Context.Message.MentionedUsers)
             {
                 var guildUser = Context.Guild.GetUser(mentionedUser.Id);

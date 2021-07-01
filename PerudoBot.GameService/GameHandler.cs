@@ -27,16 +27,27 @@ namespace PerudoBot.GameService
             _cache = cache;
         }
 
-        public List<GamePlayerDto> AddPlayer(ulong userId, ulong guildId, string name, bool isBot)
+        public bool AddPlayer(ulong userId, ulong guildId, string name, bool isBot)
         {
+            var game = GetActiveGame();
+            if (game != null) return false;
+
             var gameplayers = (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
 
             if (gameplayers == null) gameplayers = new List<GamePlayerDto>();
 
+            var userExists = gameplayers.Any(x => x.UserId == userId);
+            if (userExists) return false;
+
             gameplayers.Add(new GamePlayerDto { Name = name, UserId = userId, GuildId = guildId, IsBot = isBot });
 
             _cache.Set($"gameplayers{_channelId}", gameplayers);
-            return gameplayers;
+            return true;
+        }
+
+        public void ClearPlayerList()
+        {
+            _cache.Remove($"gameplayers{_channelId}");
         }
 
         public void SetGuild(ulong guildId)
@@ -71,6 +82,8 @@ namespace PerudoBot.GameService
 
             if (gamemode == "suddendeath") game.SetModeSuddenDeath();
             if (gamemode == "variable") game.SetModeVariable();
+
+            ClearPlayerList();
 
             return game;
         }
