@@ -64,12 +64,14 @@ namespace PerudoBot.GameService
             _cache.Set($"gamemode{_channelId}", "variable");
         }
 
-        public GameObject CreateGame()
+        public IGameObject CreateGame()
         {
             var game = GetActiveGame();
             if (game != null) return null;
 
             game = new GameObject(_db, _channelId);
+            game = new ExampleDecorator(game);
+
             game.CreateGame(_guildId);
 
             var gameplayers = GetSetupPlayers();
@@ -88,8 +90,10 @@ namespace PerudoBot.GameService
             return game;
         }
 
-        public GameObject GetActiveGame()
+        public IGameObject GetActiveGame()
         {
+            // TODO: Add all required decorators
+
             var game = new GameObject(_db, _channelId);
             game.LoadActiveGame();
             if (game.IsInProgress()) return game;

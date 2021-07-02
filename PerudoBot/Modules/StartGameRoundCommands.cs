@@ -33,7 +33,7 @@ namespace PerudoBot.Modules
             _gameHandler.SetGuild(Context.Guild.Id);
         }
 
-        private async Task StartNewRound(GameObject game)
+        private async Task StartNewRound(IGameObject game)
         {
             var roundStatus = game.StartNewRound();
 
@@ -41,6 +41,7 @@ namespace PerudoBot.Modules
             {
                 await SendMessageAsync($":trophy: {roundStatus.Winner.GetMention()} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
                 await UpdateAvatar("coy.png");
+
                 return;
             }
 

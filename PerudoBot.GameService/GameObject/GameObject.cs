@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PerudoBot.GameService
 {
-    public class GameObject
+    public class GameObject : IGameObject
     {
         private readonly PerudoBotDbContext _db;
         private readonly ulong _channelId;
@@ -17,8 +17,6 @@ namespace PerudoBot.GameService
         {
             _db = db;
             _channelId = channelId;
-
-
         }
         public bool LoadActiveGame()
         {
@@ -118,16 +116,18 @@ namespace PerudoBot.GameService
             return true;
         }
 
-        public void SetModeVariable()
+        public bool SetModeVariable()
         {
             _game.Mode = GameMode.Variable;
             _db.SaveChanges();
+            return true;
         }
 
-        public void SetModeSuddenDeath()
+        public bool SetModeSuddenDeath()
         {
             _game.Mode = GameMode.SuddenDeath;
             _db.SaveChanges();
+            return true;
         }
 
         public List<PlayerObject> GetPlayers()
@@ -159,6 +159,9 @@ namespace PerudoBot.GameService
             _game.State = (int)GameState.InProgress;
 
             _db.SaveChanges();
+
+            // TODO: look into updating the private object more frequently?
+            LoadActiveGame();
         }
 
         public RoundStatus StartNewRound()
@@ -171,6 +174,7 @@ namespace PerudoBot.GameService
                 _game.State = (int)GameState.Finished;
 
                 _db.SaveChanges();
+                OnEndOfRound();
 
                 return new RoundStatus
                 {
@@ -214,12 +218,20 @@ namespace PerudoBot.GameService
 
             _db.SaveChanges();
 
+            //TODO: DO I have to do this every time??
+            LoadActiveGame();
+
             return new RoundStatus
             {
                 IsActive = true,
                 PlayerDice = GetPlayerDice(),
                 RoundNumber = _game.CurrentRoundNumber
             };
+        }
+
+        public void OnEndOfRound()
+        {
+            Console.WriteLine("End Of Round");
         }
 
         public void Terminate()
@@ -281,6 +293,7 @@ namespace PerudoBot.GameService
                 GamePlayer = _game.CurrentGamePlayer,
                 GamePlayerRound = _game.CurrentGamePlayer.CurrentGamePlayerRound,
             };
+            // TODO: This is a bit ugly. would prefer only 1 savechanges
             _db.SaveChanges();
             _game.GamePlayerTurnId = GetNextActiveGamePlayerId();
 
@@ -419,6 +432,11 @@ namespace PerudoBot.GameService
                 IsBot = x.GamePlayer.Player.IsBot,
                 TurnOrder = x.GamePlayer.TurnOrder
             }).ToList();
+        }
+
+        public void OnEndOfGame()
+        {
+            //throw new NotImplementedException();
         }
     }
 }
