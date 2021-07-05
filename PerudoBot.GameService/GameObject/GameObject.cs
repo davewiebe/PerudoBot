@@ -35,6 +35,13 @@ namespace PerudoBot.GameService
             return (_game != null);
         }
 
+        public void SetPlayerDice(ulong userId, string dice)
+        {
+            var gamePlayer = _game.GamePlayers.Single(x => x.Player.UserId == userId);
+            gamePlayer.CurrentGamePlayerRound.Dice = dice;
+            _db.SaveChanges();
+        }
+
         public bool CreateGame(ulong guildId)
         {
             var existingGame = _db.Games
@@ -130,7 +137,7 @@ namespace PerudoBot.GameService
             return true;
         }
 
-        public List<PlayerObject> GetPlayers()
+        public List<PlayerData> GetPlayers()
         {            
             return _game.GamePlayers.Select(x => x.ToPlayerObject()).OrderBy(x => x.Name).ToList();
         }
@@ -180,7 +187,14 @@ namespace PerudoBot.GameService
                 {
                     IsActive = false,
                     Winner = activeGamePlayers.Single().ToPlayerObject(),
-                    PlayerDice = new List<PlayerDice>()
+                    Players = _game.GamePlayers.Select(x => new PlayerData
+                    {
+                        IsBot = x.Player.IsBot,
+                        Name = x.Player.Name,
+                        Rank = x.Rank,
+                        NumberOfDice = x.NumberOfDice,
+                        UserId = x.Player.UserId
+                    }).ToList()
                 };
             }
 
@@ -197,7 +211,7 @@ namespace PerudoBot.GameService
 
             // and set dice
             var r = new Random();
-            var gamePlayers = _game.GamePlayers.Where(x => x.NumberOfDice > 0).ToList();
+            var gamePlayers = _game.GamePlayers.ToList();
             foreach (var player in gamePlayers)
             {
                 var dice = new List<int>();
@@ -224,7 +238,7 @@ namespace PerudoBot.GameService
             return new RoundStatus
             {
                 IsActive = true,
-                PlayerDice = GetPlayerDice(),
+                Players = GetPlayerDice(),
                 RoundNumber = _game.CurrentRoundNumber
             };
         }
@@ -337,6 +351,7 @@ namespace PerudoBot.GameService
                 liarResult.PlayerWhoLostDice = liarResult.PlayerWhoCalledLiar;
 
                 _game.CurrentGamePlayer.NumberOfDice -= liarResult.DiceLost;
+                if (_game.CurrentGamePlayer.NumberOfDice < 0) _game.CurrentGamePlayer.NumberOfDice = 0;
 
                 SetGamePlayerTurn(_game.CurrentGamePlayer.Id);
             }
@@ -347,6 +362,7 @@ namespace PerudoBot.GameService
                 liarResult.PlayerWhoLostDice = liarResult.PlayerWhoBidLast;
 
                 previousBid.GamePlayer.NumberOfDice -= liarResult.DiceLost;
+                if (previousBid.GamePlayer.NumberOfDice < 0) previousBid.GamePlayer.NumberOfDice = 0;
                 SetGamePlayerTurn(previousBid.GamePlayer.Id);
             }
 
@@ -392,7 +408,7 @@ namespace PerudoBot.GameService
             return allDice.Count(x => x == pips || x == 1);
         }
 
-        public PlayerObject GetCurrentPlayer()
+        public PlayerData GetCurrentPlayer()
         {
             var currentGamePlayer = _game.CurrentGamePlayer;
 
@@ -421,16 +437,17 @@ namespace PerudoBot.GameService
             }
         }
 
-        public List<PlayerDice> GetPlayerDice()
+        public List<PlayerData> GetPlayerDice()
         {
-            return _game.CurrentRound.GamePlayerRounds.Select(x => new PlayerDice
+            return _game.CurrentRound.GamePlayerRounds.Select(x => new PlayerData
             {
                 Name = x.GamePlayer.Player.Name,
                 UserId = x.GamePlayer.Player.UserId,
                 NumberOfDice = x.GamePlayer.NumberOfDice,
                 Dice = x.Dice,
                 IsBot = x.GamePlayer.Player.IsBot,
-                TurnOrder = x.GamePlayer.TurnOrder
+                TurnOrder = x.GamePlayer.TurnOrder,
+                Rank = x.GamePlayer.Rank
             }).ToList();
         }
 

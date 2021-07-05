@@ -21,6 +21,7 @@ namespace PerudoBot.Database.Data
 
         public int NumberOfDice { get; set; } // Current Number of Dice
         public int TurnOrder { get; set; }
+        public int Rank { get; set; }
 
         public GamePlayerRound CurrentGamePlayerRound
         {

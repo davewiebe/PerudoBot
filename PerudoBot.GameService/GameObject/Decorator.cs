@@ -36,7 +36,7 @@ namespace PerudoBot.GameService
             return _game.Bid(quantity, pips);
         }
         
-        public virtual PlayerObject GetCurrentPlayer()
+        public virtual PlayerData GetCurrentPlayer()
         {
             return _game.GetCurrentPlayer();
         }
@@ -51,7 +51,7 @@ namespace PerudoBot.GameService
             return _game.BidReverse(quantity, pips);
         }
 
-        public virtual List<PlayerDice> GetPlayerDice()
+        public virtual List<PlayerData> GetPlayerDice()
         {
             return _game.GetPlayerDice();
         }

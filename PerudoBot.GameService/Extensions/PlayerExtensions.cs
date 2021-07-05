@@ -9,9 +9,9 @@ namespace PerudoBot.GameService.Extensions
 {
     public static class PlayerExtensions
     {
-        public static PlayerObject ToPlayerObject(this GamePlayer gamePlayer)
+        public static PlayerData ToPlayerObject(this GamePlayer gamePlayer)
         {
-            return new PlayerObject
+            return new PlayerData
             {
                 NumberOfDice = gamePlayer.NumberOfDice,
                 IsBot = gamePlayer.Player.IsBot,

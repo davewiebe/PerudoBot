@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PerudoBot.Database.Sqlite\PerudoBot.Database.csproj" />
+    <ProjectReference Include="..\PerudoBot.EloService\PerudoBot.EloService.csproj" />
     <ProjectReference Include="..\PerudoBot.GameService\PerudoBot.GameService.csproj" />
   </ItemGroup>
 

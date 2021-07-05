@@ -8,10 +8,10 @@ namespace PerudoBot.GameService
         public void OnEndOfGame();
         public void Start();
         public bool Bid(int quantity, int pips);
-        public PlayerObject GetCurrentPlayer();
+        public PlayerData GetCurrentPlayer();
         public int GetCurrentRoundNumber();
         public bool BidReverse(int quantity, int pips);
-        public List<PlayerDice> GetPlayerDice();
+        public List<PlayerData> GetPlayerDice();
         public LiarResult Liar();
         public bool CreateGame(ulong guildId);
         public bool AddPlayer(ulong userId, ulong guildId, string name, bool isBot);

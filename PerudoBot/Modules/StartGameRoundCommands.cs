@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
+using PerudoBot.Database.Data;
+using PerudoBot.EloService.Elo;
 using PerudoBot.Extensions;
 using PerudoBot.GameService;
 using System.Collections.Generic;
@@ -42,21 +44,101 @@ namespace PerudoBot.Modules
                 await SendMessageAsync($":trophy: {roundStatus.Winner.GetMention()} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
                 await UpdateAvatar("coy.png");
 
+                await CalculateEloAsync(roundStatus.Players);
+
                 return;
             }
 
-            if (roundStatus.PlayerDice.Count < 3) await UpdateAvatar("beaten.png");
+            if (roundStatus.Players.Count < 3) await UpdateAvatar("beaten.png");
 
             await SendNewRoundStatus(roundStatus);
-            await SendOutDice(roundStatus.PlayerDice);
+            await SendOutDice(roundStatus.Players);
             await SendMessageAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention()} goes first");
+        }
+
+        private async Task CalculateEloAsync(List<PlayerData> playersData)
+        {
+            var currentSeason = _db.EloSeasons
+                .AsQueryable()
+                .Where(x => x.GuildId == Context.Guild.Id)
+                .OrderBy(x => x.Id)
+                .LastOrDefault();
+
+            if (currentSeason == null)
+            {
+                currentSeason = new EloSeason
+                {
+                    GuildId = Context.Guild.Id,
+                    SeasonName = "Season Zero"
+                };
+                _db.EloSeasons.Add(currentSeason);
+                _db.SaveChanges();
+            }
+
+            var eloMatch = new EloMatch();
+
+            foreach (var playerData in playersData)
+            {
+                var player = _db.Players
+                    .AsQueryable()
+                    .Where(x => x.GuildId == Context.Guild.Id)
+                    .Where(x => x.UserId == playerData.UserId)
+                    .Single();
+
+                var elo = _db.PlayerElos
+                    .AsQueryable()
+                    .Where(x => x.PlayerId == player.Id)
+                    .Where(x => x.EloSeason == currentSeason)
+                    .SingleOrDefault();
+
+                if (elo == null)
+                {
+                    elo = new PlayerElo
+                    {
+                        EloSeason = currentSeason,
+                        GameMode = "Oh butts. Add this", // TODO
+                        Player = player,
+                        Rating = 1500
+                    };
+                    _db.PlayerElos.Add(elo);
+                    _db.SaveChanges();
+                }
+
+                eloMatch.AddPlayer(player.Id, playerData.Rank, elo.Rating);
+            }
+
+
+            foreach (var playerData in playersData)
+            {
+                var player = _db.Players
+                    .AsQueryable()
+                    .Where(x => x.GuildId == Context.Guild.Id)
+                    .Where(x => x.UserId == playerData.UserId)
+                    .Single();
+
+
+                var playerElo = _db.PlayerElos
+                    .AsQueryable()
+                    .Where(x => x.Player.GuildId == Context.Guild.Id)
+                    .Where(x => x.Player.UserId == playerData.UserId)
+                    .Where(x => x.EloSeason == currentSeason)
+                    .Single();
+
+                var newEloRating = eloMatch.GetEloRating(player.Id);
+                var oldElo = playerElo.Rating;
+                playerElo.Rating = newEloRating;
+
+                await SendMessageAsync($"`{playerData.Rank}` {playerData.Name} `{oldElo}` (`{newEloRating - oldElo}`)");
+            }
+
+            _db.SaveChanges();
         }
 
         private async Task SendNewRoundStatus(RoundStatus roundStatus)
         {
-            var totalDice = roundStatus.PlayerDice.Sum(x => x.NumberOfDice);
+            var totalDice = roundStatus.Players.Sum(x => x.NumberOfDice);
 
-            var players = roundStatus.PlayerDice
+            var players = roundStatus.ActivePlayers
                             .OrderBy(x => x.TurnOrder)
                             .Select(x => $"`{x.NumberOfDice}` {x.Name}");
 
@@ -85,7 +167,7 @@ namespace PerudoBot.Modules
             await SendOutDice(playerDice);
         }
 
-        private async Task SendOutDice(List<PlayerDice> playerDice)
+        private async Task SendOutDice(List<PlayerData> playerDice)
         {
             foreach (var player in playerDice)
             {

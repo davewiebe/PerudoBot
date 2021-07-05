@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PerudoBot.GameService.Elo
+namespace PerudoBot.EloService.Elo
 {
     public class EloPlayer
     {
         public float EloChangeDeferedRounding = 0f;
-        public string Name;
+        public int PlayerId;
         public int Place = 0;
         public int EloPre = 0;
         public int EloPost = 0;
@@ -18,11 +18,11 @@ namespace PerudoBot.GameService.Elo
     {
         private List<EloPlayer> _players = new List<EloPlayer>();
 
-        public void AddPlayer(string name, int place, int Elo)
+        public void AddPlayer(int playerId, int place, int Elo)
         {
             EloPlayer player = new EloPlayer
             {
-                Name = name,
+                PlayerId = playerId,
                 Place = place,
                 EloPre = Elo
             };
@@ -30,11 +30,11 @@ namespace PerudoBot.GameService.Elo
             _players.Add(player);
         }
 
-        public int GetElo(string name) =>
-            _players.FirstOrDefault(p => p.Name == name)?.EloPost ?? 1500;
+        public int GetEloRating(int playerId) =>
+            _players.FirstOrDefault(p => p.PlayerId == playerId)?.EloPost ?? 1500;
 
-        public int GetEloChange(string name) =>
-            _players.FirstOrDefault(p => p.Name == name)?.EloChange ?? 0;
+        public int GetEloChange(int playerId) =>
+            _players.FirstOrDefault(p => p.PlayerId == playerId)?.EloChange ?? 0;
 
         public void CalculateElos(int initialK = 20)
         {
