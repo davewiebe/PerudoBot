@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Microsoft.EntityFrameworkCore;
 using PerudoBot.Database.Data;
 using PerudoBot.EloService.Elo;
 using PerudoBot.Extensions;
@@ -12,7 +13,6 @@ namespace PerudoBot.Modules
 {
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-
         [Command("start")]
         public async Task StartGame()
         {
@@ -24,7 +24,7 @@ namespace PerudoBot.Modules
 
             await SendMessageAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
 
-            game.Start();
+            game.ShufflePlayers();
 
             await StartNewRound(game);
         }
@@ -81,8 +81,7 @@ namespace PerudoBot.Modules
             {
                 var player = _db.Players
                     .AsQueryable()
-                    .Where(x => x.GuildId == Context.Guild.Id)
-                    .Where(x => x.UserId == playerData.UserId)
+                    .Where(x => x.Id == playerData.PlayerId)
                     .Single();
 
                 var elo = _db.PlayerElos
@@ -112,15 +111,13 @@ namespace PerudoBot.Modules
             {
                 var player = _db.Players
                     .AsQueryable()
-                    .Where(x => x.GuildId == Context.Guild.Id)
-                    .Where(x => x.UserId == playerData.UserId)
+                    .Where(x => x.Id == playerData.PlayerId)
                     .Single();
 
 
                 var playerElo = _db.PlayerElos
                     .AsQueryable()
-                    .Where(x => x.Player.GuildId == Context.Guild.Id)
-                    .Where(x => x.Player.UserId == playerData.UserId)
+                    .Where(x => x.Player.Id == playerData.PlayerId)
                     .Where(x => x.EloSeason == currentSeason)
                     .Single();
 
@@ -169,14 +166,20 @@ namespace PerudoBot.Modules
 
         private async Task SendOutDice(List<PlayerData> playerDice)
         {
+            var playerIds = playerDice.Select(x => x.PlayerId).ToList();
+
+            var players = _db.Players.AsQueryable()
+                .Include(x => x.DiscordPlayer)
+                .Where(x => playerIds.Contains(x.Id)).ToList();
+
             foreach (var player in playerDice)
             {
                 // send dice to each player
                 var dice = player.Dice.Split(",");
                 var diceEmojis = dice.Select(x => int.Parse(x).ToEmoji());
 
-
-                var user = Context.Guild.Users.Single(x => x.Id == player.UserId);
+                var userId = players.Single(x => x.Id == player.PlayerId).DiscordPlayer.UserId;
+                var user = Context.Guild.Users.Single(x => x.Id == userId);
 
                 if (user.IsBot)
                 {

@@ -122,9 +122,9 @@ namespace PerudoBot.Modules
 
         private async Task DisplaySetupGamePlayers()
         {
-            var gamePlayers = _gameHandler.GetSetupPlayers();
+            var gamePlayers = _gameHandler.GetSetupPlayerIds();
 
-            var listOfPlayers = gamePlayers.Select(x => $"{x.Name}{(x.IsBot ? " :robot:" : "")}").ToList();
+            var listOfPlayers = gamePlayers.Select(x => $"{x.Name}").ToList();
 
             var gameType = "Sudden Death";
             if (_gameHandler.GetMode() == GameMode.Variable) gameType = "Variable";

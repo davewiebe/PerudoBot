@@ -3,6 +3,7 @@ using Discord.Commands;
 using PerudoBot.Extensions;
 using PerudoBot.GameService;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PerudoBot.Modules
@@ -18,8 +19,9 @@ namespace PerudoBot.Modules
             var game = _gameHandler.GetActiveGame();
 
             var currentPlayer = game.GetCurrentPlayer();
+            ulong userId = GetUserId(currentPlayer);
 
-            if (Context.User.Id != currentPlayer.UserId) return;
+            if (Context.User.Id != userId) return;
 
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));
@@ -45,6 +47,13 @@ namespace PerudoBot.Modules
 
         }
 
+        private ulong GetUserId(PlayerData currentPlayer)
+        {
+            return _db.Players
+                .Single(x => x.Id == currentPlayer.PlayerId)
+                .DiscordPlayer.UserId;
+        }
+
         [Command("bid")]
         [Alias("b")]
         public async Task Bid(params string[] bidText)
@@ -54,8 +63,8 @@ namespace PerudoBot.Modules
 
             //if (game == null) return;
             var currentPlayer = game.GetCurrentPlayer();
-
-            if (Context.User.Id != currentPlayer.UserId) return;
+            var userId = GetUserId(currentPlayer);
+            if (Context.User.Id != userId) return;
 
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));

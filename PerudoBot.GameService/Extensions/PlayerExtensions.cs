@@ -14,9 +14,8 @@ namespace PerudoBot.GameService.Extensions
             return new PlayerData
             {
                 NumberOfDice = gamePlayer.NumberOfDice,
-                IsBot = gamePlayer.Player.IsBot,
                 Name = gamePlayer.Player.Name,
-                UserId = gamePlayer.Player.UserId
+                PlayerId = gamePlayer.Player.Id
             };
         }
     }

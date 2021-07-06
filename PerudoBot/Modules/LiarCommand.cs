@@ -19,7 +19,8 @@ namespace PerudoBot.Modules
 
             var currentPlayer = game.GetCurrentPlayer();
 
-            if (Context.User.Id != currentPlayer.UserId) return;
+            var userId = GetUserId(currentPlayer);
+            if (Context.User.Id != userId) return;
 
             var liarResult = game.Liar();
 

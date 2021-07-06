@@ -3,6 +3,7 @@ using System.Linq;
 using PerudoBot.Database.Data;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace PerudoBot.GameService
 {
@@ -19,7 +20,6 @@ namespace PerudoBot.GameService
 *  and then use it all when starting the game
 */
 
-        // probably not safe with multiple channels yet
 
         public GameHandler(PerudoBotDbContext db, IMemoryCache cache)
         {
@@ -32,22 +32,51 @@ namespace PerudoBot.GameService
             var game = GetActiveGame();
             if (game != null) return false;
 
-            var gameplayers = (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
 
-            if (gameplayers == null) gameplayers = new List<GamePlayerDto>();
+            var discordPlayer = CreateAndGetDiscordPlayer(userId, name);
 
-            var userExists = gameplayers.Any(x => x.UserId == userId);
+            var playerIds = (List<int>)_cache.Get($"players{_channelId}");
+            if (playerIds == null) playerIds = new List<int>();
+
+            var userExists = playerIds.Any(x => x == discordPlayer.PlayerId);
             if (userExists) return false;
 
-            gameplayers.Add(new GamePlayerDto { Name = name, UserId = userId, GuildId = guildId, IsBot = isBot });
+            playerIds.Add(discordPlayer.PlayerId);
 
-            _cache.Set($"gameplayers{_channelId}", gameplayers);
+            _cache.Set($"players{_channelId}", playerIds);
             return true;
+        }
+
+        private DiscordPlayer CreateAndGetDiscordPlayer(ulong userId, string name)
+        {
+            var discordPlayer = _db.DiscordPlayers
+                .Include(x => x.Player)
+                .Where(x => x.GuildId == _guildId)
+                .SingleOrDefault(x => x.UserId == userId);
+
+            if (discordPlayer != null)
+            {
+                return discordPlayer;
+            }
+
+            discordPlayer = new DiscordPlayer
+            {
+                GuildId = _guildId,
+                UserId = userId,
+                Player = new Player
+                {
+                    Name = name
+                }
+            };
+            _db.DiscordPlayers.Add(discordPlayer);
+            _db.SaveChanges();
+
+            return discordPlayer;
         }
 
         public void ClearPlayerList()
         {
-            _cache.Remove($"gameplayers{_channelId}");
+            _cache.Remove($"players{_channelId}");
         }
 
         public void SetGuild(ulong guildId)
@@ -69,15 +98,15 @@ namespace PerudoBot.GameService
             var game = GetActiveGame();
             if (game != null) return null;
 
-            game = new GameObject(_db, _channelId);
+            game = new GameObject(_db, _channelId, _guildId);
             game = new ExampleDecorator(game);
 
-            game.CreateGame(_guildId);
+            game.CreateGame();
 
-            var gameplayers = GetSetupPlayers();
-            foreach (var player in gameplayers)
+            var playerDtos = GetSetupPlayerIds();
+            foreach (var playerDto in playerDtos)
             {
-                game.AddPlayer(player.UserId, player.GuildId, player.Name, player.IsBot);
+                game.AddPlayer(playerDto.PlayerId, playerDto.Name);
             }
             
             var gamemode = (string)_cache.Get($"gamemode{_channelId}");
@@ -94,7 +123,7 @@ namespace PerudoBot.GameService
         {
             // TODO: Add all required decorators
 
-            var game = new GameObject(_db, _channelId);
+            var game = new GameObject(_db, _channelId, _guildId);
             game.LoadActiveGame();
             if (game.IsInProgress()) return game;
             return null;
@@ -105,11 +134,19 @@ namespace PerudoBot.GameService
             _channelId = channelId;
         }
 
-        public List<GamePlayerDto> GetSetupPlayers()
+        public List<PlayerDto> GetSetupPlayerIds()
         {
-            var gamePlayers = (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
-            if (gamePlayers == null) return new List<GamePlayerDto>();
-            return (List<GamePlayerDto>)_cache.Get($"gameplayers{_channelId}");
+            var playerIds = (List<int>)_cache.Get($"players{_channelId}");
+            if (playerIds == null) return new List<PlayerDto>();
+
+            var players = _db.Players.Where(x => playerIds.Contains(x.Id))
+                .Select(x => new PlayerDto { 
+                    PlayerId = x.Id, 
+                    Name = x.Name 
+                })
+                .ToList();
+
+            return players;
         }
 
         public void Terminate()
@@ -134,11 +171,9 @@ namespace PerudoBot.GameService
         }
     }
 
-    public class GamePlayerDto
+    public class PlayerDto
     {
-        public ulong UserId { get; set; }
+        public int PlayerId { get; set; }
         public string Name { get; set; }
-        public ulong GuildId { get; internal set; }
-        public bool IsBot { get; internal set; }
     }
 }

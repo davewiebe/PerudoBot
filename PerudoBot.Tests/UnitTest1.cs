@@ -26,16 +26,14 @@ namespace PerudoBot.Tests
             ulong guildId = 111111;
             ulong channelId = 123456;
 
-            var game = new GameObject(_db, channelId);
+            var game = new GameObject(_db, channelId, guildId);
+            game.CreateGame();
 
-            game.CreateGame(guildId);
-            game.AddPlayer(1, guildId, "Dave", isBot: false);
-            game.AddPlayer(2, guildId, "Courtney", isBot: false);
-            //game.SetPlayerOrder(order here....somehow); // Need to add this soon. Will help with testing.
+            game.AddPlayer(1, "Dave");
+            game.AddPlayer(2, "Courtney");
             game.SetModeSuddenDeath();
-
-            game.Start();
-            game.StartNewRound(); // I don't think i should have to call this...
+            //game.ShufflePlayers();
+            game.StartNewRound(); // Rename to "Start Game" and then auto-call this after "Liar" ??
             game.SetPlayerDice(1, "1,2,3,4,5");
             game.SetPlayerDice(2, "2,3,4,5,6");
 

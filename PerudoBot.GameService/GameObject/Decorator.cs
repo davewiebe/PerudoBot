@@ -26,11 +26,6 @@ namespace PerudoBot.GameService
             _game.OnEndOfGame();
         }
 
-        public virtual void Start()
-        {
-            _game.Start();
-        }
-
         public virtual bool Bid(int quantity, int pips)
         {
             return _game.Bid(quantity, pips);
@@ -59,13 +54,13 @@ namespace PerudoBot.GameService
         {
             return _game.Liar();
         }
-        public virtual bool CreateGame(ulong guildId)
+        public virtual bool CreateGame()
         {
-            return _game.CreateGame(guildId);
+            return _game.CreateGame();
         }
-        public virtual bool AddPlayer(ulong userId, ulong guildId, string name, bool isBot)
+        public virtual bool AddPlayer(int playerId, string name)
         {
-            return _game.AddPlayer(userId, guildId, name, isBot);
+            return _game.AddPlayer(playerId, name);
         }
         public virtual bool SetModeSuddenDeath()
         {
@@ -78,6 +73,11 @@ namespace PerudoBot.GameService
         public virtual RoundStatus StartNewRound()
         {
             return _game.StartNewRound();
+        }
+
+        public void ShufflePlayers()
+        {
+            _game.ShufflePlayers();
         }
     }
 }

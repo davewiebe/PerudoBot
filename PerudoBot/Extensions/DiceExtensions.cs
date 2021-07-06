@@ -7,7 +7,7 @@ namespace PerudoBot.Extensions
     {
         public static string GetMention(this PlayerData playerObject)
         {
-            return $"<@!{playerObject.UserId}>";
+            return $"<@!{playerObject.PlayerId}>";
         }
     }
 }
