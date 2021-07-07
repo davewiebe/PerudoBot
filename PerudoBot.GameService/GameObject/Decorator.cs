@@ -46,9 +46,9 @@ namespace PerudoBot.GameService
             return _game.BidReverse(quantity, pips);
         }
 
-        public virtual List<PlayerData> GetPlayerDice()
+        public virtual List<PlayerData> GetPlayers()
         {
-            return _game.GetPlayerDice();
+            return _game.GetPlayers();
         }
         public virtual LiarResult Liar()
         {
@@ -78,6 +78,11 @@ namespace PerudoBot.GameService
         public void ShufflePlayers()
         {
             _game.ShufflePlayers();
+        }
+
+        public string GetGameMode()
+        {
+            return _game.GetGameMode();
         }
     }
 }

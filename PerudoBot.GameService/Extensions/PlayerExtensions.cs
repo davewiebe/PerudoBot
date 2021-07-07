@@ -15,7 +15,10 @@ namespace PerudoBot.GameService.Extensions
             {
                 NumberOfDice = gamePlayer.NumberOfDice,
                 Name = gamePlayer.Player.Name,
-                PlayerId = gamePlayer.Player.Id
+                PlayerId = gamePlayer.Player.Id,
+                Rank = gamePlayer.Rank,
+                TurnOrder = gamePlayer.TurnOrder,
+                Dice = gamePlayer.CurrentGamePlayerRound?.Dice
             };
         }
     }

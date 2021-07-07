@@ -31,6 +31,7 @@ namespace PerudoBot.GameService
                 .ThenInclude(x => x.GamePlayerRounds)
                 .Include(x => x.GamePlayers)
                 .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.DiscordPlayer)
                 .OrderBy(x => x.Id)
                 .LastOrDefault();
 
@@ -118,7 +119,8 @@ namespace PerudoBot.GameService
             {
                 GameId = _game.Id,
                 Player = player,
-                TurnOrder = numberOfPlayers + 1
+                TurnOrder = numberOfPlayers + 1,
+                NumberOfDice = 5
             });
 
             _db.SaveChanges();
@@ -141,7 +143,10 @@ namespace PerudoBot.GameService
 
         public List<PlayerData> GetPlayers()
         {            
-            return _game.GamePlayers.Select(x => x.ToPlayerObject()).OrderBy(x => x.Name).ToList();
+            return _game.GamePlayers
+                .Select(x => x.ToPlayerObject())
+                .OrderBy(x => x.Name)
+                .ToList();
         }
 
         public string GetMode()
@@ -158,7 +163,6 @@ namespace PerudoBot.GameService
             foreach (var gamePlayer in shuffledGamePlayers)
             {
                 gamePlayer.TurnOrder = turnOrder;
-                gamePlayer.NumberOfDice = 5;
                 turnOrder += 1;
             }
 
@@ -183,7 +187,9 @@ namespace PerudoBot.GameService
             if (activeGamePlayers.Count() == 1)
             {
                 // end the game they won!
-                _game.WinnerPlayerId = activeGamePlayers.Single().Player.Id;
+                var winner = activeGamePlayers.Single();
+                winner.Rank = 1;
+                _game.WinnerPlayerId = winner.Player.Id;
                 _game.State = (int)GameState.Finished;
 
                 _db.SaveChanges();
@@ -244,7 +250,7 @@ namespace PerudoBot.GameService
             return new RoundStatus
             {
                 IsActive = true,
-                Players = GetPlayerDice(),
+                Players = GetPlayers(),
                 RoundNumber = _game.CurrentRoundNumber
             };
         }
@@ -259,7 +265,7 @@ namespace PerudoBot.GameService
             _game.State = (int)GameState.Terminated;
             _db.SaveChanges();
         }
-
+        
         public bool BidReverse(int quantity, int pips)
         {
             return Bid(quantity, pips, true);
@@ -270,6 +276,8 @@ namespace PerudoBot.GameService
         }
         private bool Bid(int quantity, int pips, bool reverse = false)
         {
+            if (pips > 6) throw new ArgumentOutOfRangeException("Cmon");
+
             var previousBid = _game.CurrentRound
                 .Actions.OfType<Bid>()
                 .LastOrDefault();
@@ -337,10 +345,11 @@ namespace PerudoBot.GameService
 
             if (_game.CurrentRound.LatestAction is not Bid previousBid) return null; //throw error?
 
+            var PlayerWhoBidLast = previousBid.GamePlayer;
+            var PlayerWhoCalledLiar = _game.CurrentGamePlayer;
+            GamePlayer PlayerWhoLostDice;
             var liarResult = new LiarResult
             {
-                PlayerWhoBidLast = previousBid.GamePlayer.ToPlayerObject(),
-                PlayerWhoCalledLiar = _game.CurrentGamePlayer.ToPlayerObject(),
                 BidQuantity = previousBid.Quantity,
                 BidPips = previousBid.Pips
             };
@@ -354,10 +363,9 @@ namespace PerudoBot.GameService
                 // Bidder was correct
                 liarResult.DiceLost = GetDiceLost((actualQuantity - previousBid.Quantity) + 1);
                 liarResult.IsSuccessful = false;
-                liarResult.PlayerWhoLostDice = liarResult.PlayerWhoCalledLiar;
+                PlayerWhoLostDice = PlayerWhoCalledLiar;
 
-                _game.CurrentGamePlayer.NumberOfDice -= liarResult.DiceLost;
-                if (_game.CurrentGamePlayer.NumberOfDice < 0) _game.CurrentGamePlayer.NumberOfDice = 0;
+                DecrementDice(PlayerWhoCalledLiar, liarResult.DiceLost);
 
                 SetGamePlayerTurn(_game.CurrentGamePlayer.Id);
             }
@@ -365,17 +373,34 @@ namespace PerudoBot.GameService
             {
                 liarResult.DiceLost = GetDiceLost(previousBid.Quantity - actualQuantity);
                 liarResult.IsSuccessful = true;
-                liarResult.PlayerWhoLostDice = liarResult.PlayerWhoBidLast;
+                PlayerWhoLostDice = PlayerWhoBidLast;
 
-                previousBid.GamePlayer.NumberOfDice -= liarResult.DiceLost;
-                if (previousBid.GamePlayer.NumberOfDice < 0) previousBid.GamePlayer.NumberOfDice = 0;
+                DecrementDice(PlayerWhoBidLast, liarResult.DiceLost);
+
                 SetGamePlayerTurn(previousBid.GamePlayer.Id);
             }
+
 
             _db.Actions.Add(liarCall);
             _db.SaveChanges();
 
+            liarResult.PlayerWhoBidLast = PlayerWhoBidLast.ToPlayerObject();
+            liarResult.PlayerWhoCalledLiar = PlayerWhoCalledLiar.ToPlayerObject();
+            liarResult.PlayerWhoLostDice = PlayerWhoLostDice.ToPlayerObject();
+
             return liarResult;
+        }
+
+        private void DecrementDice(GamePlayer PlayerWhoLostDice, int diceLost)
+        {
+            PlayerWhoLostDice.NumberOfDice -= diceLost;
+            if (PlayerWhoLostDice.NumberOfDice <= 0)
+            {
+                PlayerWhoLostDice.NumberOfDice = 0;
+                PlayerWhoLostDice.Rank = _game.GamePlayers
+                    .Where(x => x.PlayerId != PlayerWhoLostDice.PlayerId)
+                    .Count(x => x.NumberOfDice > 0) +1;
+            }
         }
 
         private int GetDiceLost(int numberOfDiceOffBy)
@@ -443,22 +468,14 @@ namespace PerudoBot.GameService
             }
         }
 
-        public List<PlayerData> GetPlayerDice()
-        {
-            return _game.CurrentRound.GamePlayerRounds.Select(x => new PlayerData
-            {
-                Name = x.GamePlayer.Player.Name,
-                PlayerId = x.GamePlayer.Player.Id,
-                NumberOfDice = x.GamePlayer.NumberOfDice,
-                Dice = x.Dice,
-                TurnOrder = x.GamePlayer.TurnOrder,
-                Rank = x.GamePlayer.Rank
-            }).ToList();
-        }
-
         public void OnEndOfGame()
         {
             //throw new NotImplementedException();
+        }
+
+        public string GetGameMode()
+        {
+            return _game.Mode;
         }
     }
 }

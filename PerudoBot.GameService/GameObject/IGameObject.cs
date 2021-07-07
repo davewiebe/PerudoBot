@@ -10,7 +10,7 @@ namespace PerudoBot.GameService
         public PlayerData GetCurrentPlayer();
         public int GetCurrentRoundNumber();
         public bool BidReverse(int quantity, int pips);
-        public List<PlayerData> GetPlayerDice();
+        public List<PlayerData> GetPlayers();
         public LiarResult Liar();
         public bool CreateGame();
         public bool AddPlayer(int playerId, string name);
@@ -18,5 +18,6 @@ namespace PerudoBot.GameService
         public bool SetModeVariable();
         public RoundStatus StartNewRound();
         void ShufflePlayers();
+        string GetGameMode();
     }
 }

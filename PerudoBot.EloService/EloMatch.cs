@@ -4,15 +4,6 @@ using System.Linq;
 
 namespace PerudoBot.EloService.Elo
 {
-    public class EloPlayer
-    {
-        public float EloChangeDeferedRounding = 0f;
-        public int PlayerId;
-        public int Place = 0;
-        public int EloPre = 0;
-        public int EloPost = 0;
-        public int EloChange = 0;
-    }
 
     public class EloMatch
     {
@@ -35,6 +26,8 @@ namespace PerudoBot.EloService.Elo
 
         public int GetEloChange(int playerId) =>
             _players.FirstOrDefault(p => p.PlayerId == playerId)?.EloChange ?? 0;
+        public int GetOldEloRating(int playerId) =>
+            _players.FirstOrDefault(p => p.PlayerId == playerId)?.EloPre ?? 1500;
 
         public void CalculateElos(int initialK = 20)
         {
@@ -78,6 +71,11 @@ namespace PerudoBot.EloService.Elo
                 _players[i].EloChange = (int)Math.Round(_players[i].EloChangeDeferedRounding);
                 _players[i].EloPost = _players[i].EloPre + _players[i].EloChange;
             }
+        }
+
+        internal List<EloPlayer> GetPlayers()
+        {
+            return _players;
         }
     }
 }

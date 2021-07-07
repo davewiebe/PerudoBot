@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Caching.Memory;
 using NUnit.Framework;
 using PerudoBot.Database.Data;
+using PerudoBot.EloService;
 using PerudoBot.GameService;
 using PerudoBotTests;
+using System.Linq;
 
 namespace PerudoBot.Tests
 {
@@ -42,11 +44,30 @@ namespace PerudoBot.Tests
 
             // complicated. because they weren't eliminated during this round, so it looks like they still have dice
             // at this point -- and not eliminated.
-            var wasEliminated = liarResult.PlayerWhoLostDice.IsEliminated;
+            //var wasEliminated = liarResult.PlayerWhoLostDice.IsEliminated;
 
-            game.GetPlayers();
-            
-            game.OnEndOfRound(); // what does this do?
+            var gameMode = game.GetGameMode();
+            var eloHandler = new EloHandler(_db, guildId, gameMode);
+            var gamePlayers = game.GetPlayers();
+
+            foreach (var gamePlayer in gamePlayers)
+            {
+                eloHandler.AddPlayer(gamePlayer.PlayerId, gamePlayer.Rank);
+            }
+            eloHandler.CalculateAndSaveElo();
+
+            var eloResults = eloHandler.GetEloResults();
+
+            var daveElo = eloResults.Single(x => x.PlayerId == 1);
+            var courtneyElo = eloResults.Single(x => x.PlayerId == 2);
+
+            Assert.AreEqual(1510, courtneyElo.Elo);
+            Assert.AreEqual(1500, courtneyElo.PreviousElo);
+            Assert.AreEqual(1490, daveElo.Elo);
+            Assert.AreEqual(1500, daveElo.PreviousElo);
+
+            var eloSeason = eloHandler.GetCurrentEloSeason();
+            Assert.AreEqual("Season Zero", eloSeason.SeasonName);
         }
     }
 }

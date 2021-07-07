@@ -37,7 +37,7 @@ namespace PerudoBot.Modules
                 }
                 DeleteCommandFromDiscord();
                 await SendMessageAsync($"Player order *REVERSED*");
-                await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
+                await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention(_db)} is up.");
             }
             catch (ArgumentOutOfRangeException e)
             {
@@ -79,7 +79,7 @@ namespace PerudoBot.Modules
                 return;
             }
             DeleteCommandFromDiscord();
-            await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention()} is up.");
+            await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { game.GetCurrentPlayer().GetMention(_db)} is up.");
         }
     }
 }

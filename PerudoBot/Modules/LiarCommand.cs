@@ -31,7 +31,7 @@ namespace PerudoBot.Modules
             // for dramatic effect
             Thread.Sleep(3000);
 
-            await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention()} loses {liarResult.DiceLost} dice. :fire:");
+            await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention(_db)} loses {liarResult.DiceLost} dice. :fire:");
 
             await SendRoundSummary();
 
@@ -42,7 +42,7 @@ namespace PerudoBot.Modules
         {
             var game = _gameHandler.GetActiveGame();
 
-            var players = game.GetPlayerDice().OrderBy(x => x.TurnOrder);
+            var players = game.GetPlayers().OrderBy(x => x.TurnOrder);
             var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Split(",").Select(x => int.Parse(x).ToEmoji()))}".TrimEnd());
 
             var allDice = players.SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
