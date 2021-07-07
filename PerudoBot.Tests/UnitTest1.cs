@@ -39,8 +39,8 @@ namespace PerudoBot.Tests
             game.SetPlayerDice(1, "1,2,3,4,5");
             game.SetPlayerDice(2, "2,3,4,5,6");
 
-            game.Bid(10, 6);
-            var liarResult = game.Liar();
+            game.Bid(1, 10, 6);
+            var liarResult = game.Liar(2);
 
             // complicated. because they weren't eliminated during this round, so it looks like they still have dice
             // at this point -- and not eliminated.
@@ -48,7 +48,7 @@ namespace PerudoBot.Tests
 
             var gameMode = game.GetGameMode();
             var eloHandler = new EloHandler(_db, guildId, gameMode);
-            var gamePlayers = game.GetPlayers();
+            var gamePlayers = game.GetAllPlayers();
 
             foreach (var gamePlayer in gamePlayers)
             {
@@ -68,6 +68,35 @@ namespace PerudoBot.Tests
 
             var eloSeason = eloHandler.GetCurrentEloSeason();
             Assert.AreEqual("Season Zero", eloSeason.SeasonName);
+        }
+
+        [Test]
+        public void Test2()
+        {
+            ulong guildId = 111111;
+            ulong channelId = 123456;
+
+            var game = new GameObject(_db, channelId, guildId);
+            game.CreateGame();
+
+            game.AddPlayer(1, "Dave");
+            game.AddPlayer(2, "Courtney");
+            game.AddPlayer(3, "Em");
+            game.AddPlayer(4, "Andrey");
+            game.AddPlayer(5, "Josh");
+            game.SetModeSuddenDeath();
+            //game.ShufflePlayers();
+            game.StartNewRound(); // Rename to "Start Game" and then auto-call this after "Liar" ??
+            game.SetPlayerDice(1, "2,2,2,2,2");
+            game.SetPlayerDice(2, "2,2,2,2,2");
+            game.SetPlayerDice(3, "3,3,3,3,3");
+            game.SetPlayerDice(4, "4,4,4,4,4");
+            game.SetPlayerDice(5, "5,5,5,5,5");
+
+            game.Bid(1, 6, 5); // there's only 5 5's, will lose 1 die
+            var liarResult = game.Liar(2);
+
+            Assert.AreEqual(2, game.GetCurrentPlayer().PlayerId); // player 1 will be out and player 2 should go instead
         }
     }
 }

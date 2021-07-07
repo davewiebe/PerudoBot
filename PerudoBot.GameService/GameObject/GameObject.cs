@@ -141,8 +141,16 @@ namespace PerudoBot.GameService
             return true;
         }
 
-        public List<PlayerData> GetPlayers()
+        public List<PlayerData> GetAllPlayers()
         {            
+            return _game.GamePlayers
+                .Select(x => x.ToPlayerObject())
+                .OrderBy(x => x.Name)
+                .ToList();
+        }
+
+        public List<PlayerData> GetActivePlayers()
+        {
             return _game.GamePlayers
                 .Select(x => x.ToPlayerObject())
                 .OrderBy(x => x.Name)
@@ -250,7 +258,7 @@ namespace PerudoBot.GameService
             return new RoundStatus
             {
                 IsActive = true,
-                Players = GetPlayers(),
+                Players = GetAllPlayers(),
                 RoundNumber = _game.CurrentRoundNumber
             };
         }
@@ -266,16 +274,18 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
         }
         
-        public bool BidReverse(int quantity, int pips)
+        public bool BidReverse(int playerId, int quantity, int pips)
         {
-            return Bid(quantity, pips, true);
+            return Bid(playerId, quantity, pips, true);
         }
-        public bool Bid(int quantity, int pips)
+        public bool Bid(int playerId, int quantity, int pips)
         {
-            return Bid(quantity, pips, false);
+            return Bid(playerId, quantity, pips, false);
         }
-        private bool Bid(int quantity, int pips, bool reverse = false)
+        private bool Bid(int playerId, int quantity, int pips, bool reverse = false)
         {
+            if (_game.CurrentGamePlayer.PlayerId != playerId) return false;
+
             if (pips > 6) throw new ArgumentOutOfRangeException("Cmon");
 
             var previousBid = _game.CurrentRound
@@ -323,7 +333,7 @@ namespace PerudoBot.GameService
             };
             // TODO: This is a bit ugly. would prefer only 1 savechanges
             _db.SaveChanges();
-            _game.GamePlayerTurnId = GetNextActiveGamePlayerId();
+            _game.GamePlayerTurnId = GetNextActiveGamePlayerId(_game.GamePlayerTurnId);
 
             _game.CurrentRound.Actions.Add(newBid);
 
@@ -333,8 +343,10 @@ namespace PerudoBot.GameService
         }
 
 
-        public LiarResult Liar()
+        public LiarResult Liar(int playerId)
         {
+            if (_game.CurrentGamePlayer.PlayerId != playerId) return null;
+
             var liarCall = new LiarCall()
             {
                 GamePlayer = _game.CurrentGamePlayer,
@@ -367,7 +379,7 @@ namespace PerudoBot.GameService
 
                 DecrementDice(PlayerWhoCalledLiar, liarResult.DiceLost);
 
-                SetGamePlayerTurn(_game.CurrentGamePlayer.Id);
+                SetGamePlayerTurn(PlayerWhoCalledLiar.Id);
             }
             else // Liar caller was correct
             {
@@ -377,9 +389,8 @@ namespace PerudoBot.GameService
 
                 DecrementDice(PlayerWhoBidLast, liarResult.DiceLost);
 
-                SetGamePlayerTurn(previousBid.GamePlayer.Id);
+                SetGamePlayerTurn(PlayerWhoBidLast.Id);
             }
-
 
             _db.Actions.Add(liarCall);
             _db.SaveChanges();
@@ -387,6 +398,7 @@ namespace PerudoBot.GameService
             liarResult.PlayerWhoBidLast = PlayerWhoBidLast.ToPlayerObject();
             liarResult.PlayerWhoCalledLiar = PlayerWhoCalledLiar.ToPlayerObject();
             liarResult.PlayerWhoLostDice = PlayerWhoLostDice.ToPlayerObject();
+
 
             return liarResult;
         }
@@ -424,7 +436,7 @@ namespace PerudoBot.GameService
             var gamePlayer = _db.GamePlayers.Single(x => x.Id == gamePlayerId);
             if (gamePlayer.NumberOfDice <= 0)
             {
-                _game.GamePlayerTurnId = GetNextActiveGamePlayerId();
+                _game.GamePlayerTurnId = GetNextActiveGamePlayerId(gamePlayerId);
             }
             else
             {
@@ -434,7 +446,10 @@ namespace PerudoBot.GameService
 
         private int GetNumberOfDiceMatchingBid(Game game, int pips) // turn into extension method
         {
-            var allDice = game.CurrentRound.GamePlayerRounds.SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
+            var allDice = game.CurrentRound
+                .GamePlayerRounds
+                .Where(x => x.Dice != "")
+                .SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
 
             return allDice.Count(x => x == pips || x == 1);
         }
@@ -446,9 +461,9 @@ namespace PerudoBot.GameService
             return currentGamePlayer.ToPlayerObject();
         }
 
-        private int GetNextActiveGamePlayerId()
+        private int GetNextActiveGamePlayerId(int gamePlayerId)
         {
-            var currentGamePlayerId = _game.GamePlayerTurnId;
+            var currentGamePlayerId = gamePlayerId;
 
             var gamePlayerIds = _game.GamePlayers
                 .Where(x => x.NumberOfDice > 0 || x.Id == currentGamePlayerId) // in case the current user is eliminated and won't show up

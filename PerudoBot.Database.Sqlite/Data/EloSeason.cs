@@ -10,5 +10,7 @@ namespace PerudoBot.Database.Data
         public int Id { get; set; }
         public ulong GuildId { get; set; }
         public string SeasonName { get; set; }
+
+        public virtual List<PlayerElo> PlayerElos { get; }
     }
 }

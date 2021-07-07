@@ -11,6 +11,16 @@ namespace PerudoBot.GameService.Extensions
     {
         public static PlayerData ToPlayerObject(this GamePlayer gamePlayer)
         {
+            var dice = new List<int>();
+            if (!string.IsNullOrEmpty(gamePlayer.CurrentGamePlayerRound?.Dice))
+            {
+                dice = gamePlayer.
+                    CurrentGamePlayerRound
+                    .Dice
+                    .Split(",")
+                    .Select(x => int.Parse(x))
+                    .ToList();
+            }
             return new PlayerData
             {
                 NumberOfDice = gamePlayer.NumberOfDice,
@@ -18,7 +28,7 @@ namespace PerudoBot.GameService.Extensions
                 PlayerId = gamePlayer.Player.Id,
                 Rank = gamePlayer.Rank,
                 TurnOrder = gamePlayer.TurnOrder,
-                Dice = gamePlayer.CurrentGamePlayerRound?.Dice
+                Dice = dice
             };
         }
     }

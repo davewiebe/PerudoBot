@@ -26,9 +26,9 @@ namespace PerudoBot.GameService
             _game.OnEndOfGame();
         }
 
-        public virtual bool Bid(int quantity, int pips)
+        public virtual bool Bid(int playerId, int quantity, int pips)
         {
-            return _game.Bid(quantity, pips);
+            return _game.Bid(playerId, quantity, pips);
         }
         
         public virtual PlayerData GetCurrentPlayer()
@@ -41,18 +41,18 @@ namespace PerudoBot.GameService
             return _game.GetCurrentRoundNumber();
         }
 
-        public virtual bool BidReverse(int quantity, int pips)
+        public virtual bool BidReverse(int playerId, int quantity, int pips)
         {
-            return _game.BidReverse(quantity, pips);
+            return _game.BidReverse(playerId, quantity, pips);
         }
 
-        public virtual List<PlayerData> GetPlayers()
+        public virtual List<PlayerData> GetAllPlayers()
         {
-            return _game.GetPlayers();
+            return _game.GetAllPlayers();
         }
-        public virtual LiarResult Liar()
+        public virtual LiarResult Liar(int playerId)
         {
-            return _game.Liar();
+            return _game.Liar(playerId);
         }
         public virtual bool CreateGame()
         {

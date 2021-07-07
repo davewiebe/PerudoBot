@@ -22,7 +22,7 @@ namespace PerudoBot.Modules
             var userId = GetUserId(currentPlayer);
             if (Context.User.Id != userId) return;
 
-            var liarResult = game.Liar();
+            var liarResult = game.Liar(currentPlayer.PlayerId);
 
             DeleteCommandFromDiscord();
 
@@ -42,10 +42,10 @@ namespace PerudoBot.Modules
         {
             var game = _gameHandler.GetActiveGame();
 
-            var players = game.GetPlayers().OrderBy(x => x.TurnOrder);
-            var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Split(",").Select(x => int.Parse(x).ToEmoji()))}".TrimEnd());
+            var players = game.GetAllPlayers().OrderBy(x => x.TurnOrder);
+            var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Select(x => x.ToEmoji()))}".TrimEnd());
 
-            var allDice = players.SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
+            var allDice = players.SelectMany(x => x.Dice);
             var allDiceGrouped = allDice
                 .GroupBy(x => x)
                 .OrderBy(x => x.Key);

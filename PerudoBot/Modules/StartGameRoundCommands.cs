@@ -57,11 +57,28 @@ namespace PerudoBot.Modules
             await SendMessageAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention(_db)} goes first");
         }
 
+        [Command("elo")]
+        public async Task Elo()
+        {
+            var eloHandler = new EloHandler(_db, Context.Guild.Id, GameMode.Variable);
+            var eloSeason = eloHandler.GetCurrentEloSeason();
+
+            var message = $"Season: {eloSeason.SeasonName}\nGame Mode: {GameMode.Variable}";
+
+            var playerElos = eloSeason.PlayerElos.OrderBy(x => x.Rating).ToList();
+            foreach (var playerElo in playerElos)
+            {
+                message += $"\n{playerElo.Player.Name}: {playerElo.Rating}";
+            }
+            await SendMessageAsync(message);
+        }
+
         private async Task CalculateEloAsync(IGameObject game)
         {
             var gameMode = game.GetGameMode();
             var eloHandler = new EloHandler(_db, Context.Guild.Id, gameMode);
-            var gamePlayers = game.GetPlayers();
+            var gamePlayers = game.GetAllPlayers()
+                .OrderBy(x => x.Rank);
 
             foreach (var gamePlayer in gamePlayers)
             {
@@ -74,7 +91,7 @@ namespace PerudoBot.Modules
             foreach (var gamePlayer in gamePlayers)
             {
                 var eloResult = eloResults.Single(x => x.PlayerId == gamePlayer.PlayerId);
-                await SendMessageAsync($"{gamePlayer.Rank} {gamePlayer.Name} {eloResult.PreviousElo} => {eloResult.Elo} ({eloResult.Elo - eloResult.PreviousElo})");
+                await SendMessageAsync($"`{gamePlayer.Rank}` {gamePlayer.Name} `{eloResult.PreviousElo}` => `{eloResult.Elo}` ({eloResult.Elo - eloResult.PreviousElo})");
             }
         }
 
@@ -108,7 +125,7 @@ namespace PerudoBot.Modules
         {
             _gameHandler.SetChannel(Context.Channel.Id);
             var game = _gameHandler.GetActiveGame();
-            var playerDice = game.GetPlayers();
+            var playerDice = game.GetAllPlayers();
             await SendOutDice(playerDice);
         }
 
@@ -123,8 +140,8 @@ namespace PerudoBot.Modules
             foreach (var player in playerDice)
             {
                 // send dice to each player
-                var dice = player.Dice.Split(",");
-                var diceEmojis = dice.Select(x => int.Parse(x).ToEmoji());
+                if (player.NumberOfDice == 0) continue;
+                var diceEmojis = player.Dice.Select(x => x.ToEmoji());
 
                 var userId = players.Single(x => x.Id == player.PlayerId).DiscordPlayer.UserId;
                 var user = Context.Guild.Users.Single(x => x.Id == userId);

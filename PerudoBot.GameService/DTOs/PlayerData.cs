@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PerudoBot.GameService
 {
@@ -6,7 +7,7 @@ namespace PerudoBot.GameService
     {
         public string Name { get; set; }
         public int PlayerId { get; set; }
-        public string Dice { get; set; }
+        public List<int> Dice { get; set; }
         public int NumberOfDice { get; internal set; }
         public int TurnOrder { get; internal set; }
         public int Rank { get; internal set; }

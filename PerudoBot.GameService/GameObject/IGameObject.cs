@@ -6,12 +6,12 @@ namespace PerudoBot.GameService
     {
         public void OnEndOfRound();
         public void OnEndOfGame();
-        public bool Bid(int quantity, int pips);
+        public bool Bid(int playerId, int quantity, int pips);
         public PlayerData GetCurrentPlayer();
         public int GetCurrentRoundNumber();
-        public bool BidReverse(int quantity, int pips);
-        public List<PlayerData> GetPlayers();
-        public LiarResult Liar();
+        public bool BidReverse(int playerId, int quantity, int pips);
+        public List<PlayerData> GetAllPlayers();
+        public LiarResult Liar(int playerId);
         public bool CreateGame();
         public bool AddPlayer(int playerId, string name);
         public bool SetModeSuddenDeath();

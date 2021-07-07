@@ -1,4 +1,5 @@
-﻿using PerudoBot.Database.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PerudoBot.Database.Data;
 using PerudoBot.EloService.Elo;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace PerudoBot.EloService
         {
             var eloSeason = _db.EloSeasons
                 .AsQueryable()
+                .Include(x => x.PlayerElos)
+                .ThenInclude(x => x.Player)
                 .Where(x => x.GuildId == _guildId)
                 .OrderBy(x => x.Id)
                 .LastOrDefault();

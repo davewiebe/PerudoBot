@@ -28,7 +28,7 @@ namespace PerudoBot.Modules
 
             try
             {
-                var result = game.BidReverse(quantity, pips);
+                var result = game.BidReverse(currentPlayer.PlayerId, quantity, pips);
                 if (result == false)
                 {
 
@@ -71,7 +71,7 @@ namespace PerudoBot.Modules
 
             try
             {
-                game.Bid(quantity, pips);
+                game.Bid(currentPlayer.PlayerId, quantity, pips);
             }
             catch (ArgumentOutOfRangeException e)
             {
