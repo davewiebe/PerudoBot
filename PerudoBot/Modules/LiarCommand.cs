@@ -42,7 +42,10 @@ namespace PerudoBot.Modules
         {
             var game = _gameHandler.GetActiveGame();
 
-            var players = game.GetAllPlayers().OrderBy(x => x.TurnOrder);
+            var players = game.GetAllPlayers()
+                .Where(x => x.Dice.Count > 0)
+                .OrderBy(x => x.TurnOrder);
+
             var playerDice = players.Select(x => $"{x.Name}: {string.Join(" ", x.Dice.Select(x => x.ToEmoji()))}".TrimEnd());
 
             var allDice = players.SelectMany(x => x.Dice);

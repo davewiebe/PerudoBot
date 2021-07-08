@@ -7,6 +7,7 @@ using PerudoBot.GameService;
 using System.IO;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace PerudoBot.Modules
 {
@@ -31,6 +32,19 @@ namespace PerudoBot.Modules
             var requestOptions = new RequestOptions()
             { RetryMode = RetryMode.RetryRatelimit };
             return await base.ReplyAsync(message, options: requestOptions, isTTS: isTTS);
+        }
+
+        private void SetGuildAndChannel()
+        {
+            _gameHandler.SetChannel(Context.Channel.Id);
+            _gameHandler.SetGuild(Context.Guild.Id);
+        }
+
+        private ulong GetUserId(PlayerData currentPlayer)
+        {
+            return _db.Players
+                .Single(x => x.Id == currentPlayer.PlayerId)
+                .DiscordPlayer.UserId;
         }
 
         [Command("updateavatar")]
@@ -62,15 +76,13 @@ namespace PerudoBot.Modules
         [Command("set")]
         public async Task Set(string param)
         {
-            _cache.Set("test", param);
-            //_gameHandler.SetData("test", param);
+            _cache.Set("test", param); // cache testing
         }
 
         [Command("get")]
         public async Task Get()
         {
-            await SendMessageAsync((string)_cache.Get("test"));
-            //await SendMessageAsync(_gameHandler.GetData("test"));
+            await SendMessageAsync((string)_cache.Get("test")); // cache testing
         }
 
         [Command("crash")]

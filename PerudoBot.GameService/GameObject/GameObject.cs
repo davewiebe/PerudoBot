@@ -149,14 +149,6 @@ namespace PerudoBot.GameService
                 .ToList();
         }
 
-        public List<PlayerData> GetActivePlayers()
-        {
-            return _game.GamePlayers
-                .Select(x => x.ToPlayerObject())
-                .OrderBy(x => x.Name)
-                .ToList();
-        }
-
         public string GetMode()
         {
             if (_game.Mode == GameMode.SuddenDeath) return "Sudden Death";

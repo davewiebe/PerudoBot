@@ -150,11 +150,5 @@ namespace PerudoBot.Modules
             _gameHandler.Terminate();
             await SendMessageAsync("Game terminated");
         }
-
-        [Command("exact")]
-        public async Task Exact(params string[] bidText)
-        {
-            await SendMessageAsync("Exact not implemented.\nIf you can't call liar and can't go up, time to start bluffing!");
-        }
     }
 }

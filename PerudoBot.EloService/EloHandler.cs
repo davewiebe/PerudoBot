@@ -29,7 +29,7 @@ namespace PerudoBot.EloService
         {
             var eloSeason = _db.EloSeasons
                 .AsQueryable()
-                .Include(x => x.PlayerElos)
+                .Include(x => x.PlayerElos.Where(x => x.GameMode == _gameMode))
                 .ThenInclude(x => x.Player)
                 .Where(x => x.GuildId == _guildId)
                 .OrderBy(x => x.Id)

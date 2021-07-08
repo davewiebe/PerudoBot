@@ -44,14 +44,6 @@ namespace PerudoBot.Modules
                 await SendMessageAsync($"{e.Message}");
                 return;
             }
-
-        }
-
-        private ulong GetUserId(PlayerData currentPlayer)
-        {
-            return _db.Players
-                .Single(x => x.Id == currentPlayer.PlayerId)
-                .DiscordPlayer.UserId;
         }
 
         [Command("bid")]
