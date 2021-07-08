@@ -58,19 +58,33 @@ namespace PerudoBot.Modules
         }
 
         [Command("elo")]
-        public async Task Elo()
+        public async Task Elo(params string[] options)
         {
-            var eloHandler = new EloHandler(_db, Context.Guild.Id, GameMode.Variable);
+            var gameMode = GameMode.Variable;
+
+            var suddendeathList = new List<string> { "suddendeath", "sd", "sudden", "death" };
+            if (suddendeathList.Contains(options.FirstOrDefault()?.ToLower()))
+            {
+                gameMode = GameMode.SuddenDeath;
+            }
+
+
+            var eloHandler = new EloHandler(_db, Context.Guild.Id, gameMode);
             var eloSeason = eloHandler.GetCurrentEloSeason();
 
-            var message = $"Season: {eloSeason.SeasonName}\nGame Mode: {GameMode.Variable}";
+            var message = $"`{gameMode}: {eloSeason.SeasonName}`";
 
-            var playerElos = eloSeason.PlayerElos.OrderBy(x => x.Rating).ToList();
+            var playerElos = eloSeason.PlayerElos
+                .Where(x => x.GameMode == gameMode)
+                .OrderByDescending(x => x.Rating)
+                .ToList();
+
             foreach (var playerElo in playerElos)
             {
                 message += $"\n{playerElo.Player.Name}: {playerElo.Rating}";
             }
             await SendMessageAsync(message);
+
         }
 
         private async Task CalculateEloAsync(IGameObject game)
