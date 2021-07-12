@@ -30,6 +30,7 @@ namespace PerudoBot.Modules
             var message = $"`{gameMode}: {eloSeason.SeasonName}`";
 
             var playerElos = eloSeason.PlayerElos
+                .Where(x => x.GameMode == gameMode) // TODO: shouldn't have to do this since we instantiated the elohandler with gamemode. something needs to be fixed.
                 .OrderByDescending(x => x.Rating)
                 .ToList();
 
