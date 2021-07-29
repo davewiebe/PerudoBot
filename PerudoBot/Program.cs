@@ -45,7 +45,7 @@ namespace PerudoBot
                             .ReadFrom.Configuration(_configuration)
                             .Enrich.FromLogContext()
                             .WriteTo.SQLite(_configuration.GetConnectionString("SerilogDb"))
-                            .WriteTo.Console()
+                            .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning)
                             .MinimumLevel.Debug()
                             .CreateLogger();
 

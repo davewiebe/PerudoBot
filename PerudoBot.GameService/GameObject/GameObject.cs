@@ -265,7 +265,7 @@ namespace PerudoBot.GameService
             _game.State = (int)GameState.Terminated;
             _db.SaveChanges();
         }
-        
+
         public bool BidReverse(int playerId, int quantity, int pips)
         {
             return Bid(playerId, quantity, pips, true);
@@ -276,30 +276,16 @@ namespace PerudoBot.GameService
         }
         private bool Bid(int playerId, int quantity, int pips, bool reverse = false)
         {
-            if (_game.CurrentGamePlayer.PlayerId != playerId) return false;
+            var isBidValid = BidValidate(playerId, quantity, pips);
 
-            if (pips > 6) throw new ArgumentOutOfRangeException("Cmon");
+            if (!isBidValid) return false;
 
-            var previousBid = _game.CurrentRound
-                .Actions.OfType<Bid>()
-                .LastOrDefault();
 
-            if (previousBid != null)
-            {
-                if (previousBid.Quantity > quantity)
-                {
-                    throw new ArgumentOutOfRangeException("Bid not high enough");
-                }
-                if (previousBid.Quantity == quantity)
-                {
-                    if (previousBid.Pips >= pips)
-                    {
-                        throw new ArgumentOutOfRangeException("Bid not high enough");
-                    }
-                }
-            }
             if (reverse)
             {
+                var previousBid = _game.CurrentRound
+                    .Actions.OfType<Bid>()
+                    .LastOrDefault();
                 if (previousBid != null)
                 {
                     return false;
@@ -313,6 +299,16 @@ namespace PerudoBot.GameService
                 }
             }
 
+            BidSave(quantity, pips);
+
+            return true;
+        }
+
+        private void BidSave(int quantity, int pips)
+        {
+            var previousBid = _game.CurrentRound
+                .Actions.OfType<Bid>()
+                .LastOrDefault();
 
             var newBid = new Bid
             {
@@ -330,27 +326,57 @@ namespace PerudoBot.GameService
             _game.CurrentRound.Actions.Add(newBid);
 
             _db.SaveChanges();
+        }
 
+        private bool BidValidate(int playerId, int quantity, int pips)
+        {
+            if (_game.CurrentGamePlayer.PlayerId != playerId) return false;
+
+            if (pips > 6) return false;
+
+            var previousBid = _game.CurrentRound
+                .Actions.OfType<Bid>()
+                .LastOrDefault();
+
+            if (previousBid != null)
+            {
+                var previousBidSize = previousBid.Quantity * 100 + previousBid.Pips;
+                if (previousBid.Pips == 1) previousBidSize += previousBid.Quantity;
+
+                var currentBidSize = quantity * 100 + pips;
+                if (pips == 1) currentBidSize += quantity;
+
+                if (previousBidSize >= currentBidSize)
+                {
+                    return false;
+                }
+            }
+            else if (pips == 1)
+            {
+                return false;
+            }
             return true;
         }
 
-
         public LiarResult Liar(int playerId)
         {
-            if (_game.CurrentGamePlayer.PlayerId != playerId) return null;
+            //if (_game.CurrentGamePlayer.PlayerId != playerId) return null;
+            var player = _game.GamePlayers.Single(x => x.PlayerId == playerId);
+
+            if (player.NumberOfDice == 0) return null;
 
             var liarCall = new LiarCall()
             {
-                GamePlayer = _game.CurrentGamePlayer,
+                GamePlayer = player,
                 Round = _game.CurrentRound,
-                GamePlayerRound = _game.CurrentGamePlayer.CurrentGamePlayerRound,
+                GamePlayerRound = player.CurrentGamePlayerRound,
                 ParentAction = _game.CurrentRound.LatestAction,
             };
 
             if (_game.CurrentRound.LatestAction is not Bid previousBid) return null; //throw error?
 
             var PlayerWhoBidLast = previousBid.GamePlayer;
-            var PlayerWhoCalledLiar = _game.CurrentGamePlayer;
+            var PlayerWhoCalledLiar = player;
             GamePlayer PlayerWhoLostDice;
             var liarResult = new LiarResult
             {

@@ -60,7 +60,7 @@ namespace PerudoBot.Tests
 
             var daveElo = eloResults.Single(x => x.PlayerId == 1);
             var courtneyElo = eloResults.Single(x => x.PlayerId == 2);
-
+            
             Assert.AreEqual(1510, courtneyElo.Elo);
             Assert.AreEqual(1500, courtneyElo.PreviousElo);
             Assert.AreEqual(1490, daveElo.Elo);

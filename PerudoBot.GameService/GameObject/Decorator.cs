@@ -30,7 +30,7 @@ namespace PerudoBot.GameService
         {
             return _game.Bid(playerId, quantity, pips);
         }
-        
+
         public virtual PlayerData GetCurrentPlayer()
         {
             return _game.GetCurrentPlayer();
@@ -40,12 +40,10 @@ namespace PerudoBot.GameService
         {
             return _game.GetCurrentRoundNumber();
         }
-
         public virtual bool BidReverse(int playerId, int quantity, int pips)
         {
             return _game.BidReverse(playerId, quantity, pips);
         }
-
         public virtual List<PlayerData> GetAllPlayers()
         {
             return _game.GetAllPlayers();
