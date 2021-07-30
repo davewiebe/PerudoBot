@@ -61,6 +61,8 @@ namespace PerudoBot
                     options.UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
                 .BuildServiceProvider();
 
+            var db = _services.GetRequiredService<PerudoBotDbContext>();
+            db.Database.Migrate();
 
             _logger = _services.GetRequiredService<ILogger<Program>>();
             _logger.LogInformation("App Starting");

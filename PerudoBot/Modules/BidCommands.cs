@@ -10,7 +10,6 @@ namespace PerudoBot.Modules
 {
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-
         [Command("bidr")]
         [Alias("br", "dib", "rbid", "rb")]
         public async Task BidReverse(params string[] bidText)
@@ -60,14 +59,12 @@ namespace PerudoBot.Modules
 
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));
+            
+            var isValid = game.Bid(currentPlayer.PlayerId, quantity, pips);
 
-            try
+            if (!isValid)
             {
-                game.Bid(currentPlayer.PlayerId, quantity, pips);
-            }
-            catch (ArgumentOutOfRangeException e)
-            {
-                await SendMessageAsync($"{e.Message}");
+                await SendMessageAsync("Invalid bid");
                 return;
             }
             DeleteCommandFromDiscord();

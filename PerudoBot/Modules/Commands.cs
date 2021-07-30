@@ -46,6 +46,12 @@ namespace PerudoBot.Modules
                 .Single(x => x.Id == currentPlayer.PlayerId)
                 .DiscordPlayer.UserId;
         }
+        private int GetPlayerId(ulong userId)
+        {
+            return _db.Players
+                .Single(x => x.DiscordPlayer.UserId == userId)
+                .Id;
+        }
 
         [Command("updateavatar")]
         public async Task UpdateAvatarCommand(params string[] options)

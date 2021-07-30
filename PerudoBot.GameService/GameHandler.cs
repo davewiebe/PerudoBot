@@ -63,6 +63,7 @@ namespace PerudoBot.GameService
             {
                 GuildId = _guildId,
                 UserId = userId,
+                IsAdministrator = false,
                 Player = new Player
                 {
                     Name = name

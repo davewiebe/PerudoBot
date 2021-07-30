@@ -341,20 +341,22 @@ namespace PerudoBot.GameService
             if (previousBid != null)
             {
                 var previousBidSize = previousBid.Quantity * 100 + previousBid.Pips;
-                if (previousBid.Pips == 1) previousBidSize += previousBid.Quantity;
+                if (previousBid.Pips == 1) previousBidSize += previousBid.Quantity * 100;
 
                 var currentBidSize = quantity * 100 + pips;
-                if (pips == 1) currentBidSize += quantity;
+                if (pips == 1) currentBidSize += quantity * 100;
 
                 if (previousBidSize >= currentBidSize)
                 {
                     return false;
                 }
             }
-            else if (pips == 1)
+
+            if (previousBid == null && pips == 1)
             {
                 return false;
             }
+
             return true;
         }
 

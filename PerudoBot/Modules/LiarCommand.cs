@@ -17,12 +17,14 @@ namespace PerudoBot.Modules
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
 
-            var currentPlayer = game.GetCurrentPlayer();
+            //var currentPlayer = game.GetCurrentPlayer();
 
-            var userId = GetUserId(currentPlayer);
-            if (Context.User.Id != userId) return;
+            //var userId = GetUserId(currentPlayer);
+            //if (Context.User.Id != userId) return;
+            var playerId = GetPlayerId(Context.User.Id);
 
-            var liarResult = game.Liar(currentPlayer.PlayerId);
+            var liarResult = game.Liar(playerId);
+            if (liarResult == null) return;
 
             DeleteCommandFromDiscord();
 

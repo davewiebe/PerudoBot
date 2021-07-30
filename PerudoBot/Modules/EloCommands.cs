@@ -61,6 +61,7 @@ namespace PerudoBot.Modules
             {
                 var eloResult = eloResults.Single(x => x.PlayerId == gamePlayer.PlayerId);
                 await SendMessageAsync($"`{gamePlayer.Rank}` {gamePlayer.Name} `{eloResult.PreviousElo}` => `{eloResult.Elo}` ({eloResult.Elo - eloResult.PreviousElo})");
+                Thread.Sleep(1500); // For suspense! 
             }
         }
     }
