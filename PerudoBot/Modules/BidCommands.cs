@@ -30,11 +30,13 @@ namespace PerudoBot.Modules
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
 
+            if (game == null) return;
             var currentPlayer = game.GetCurrentPlayer();
             var userId = GetUserId(currentPlayer);
 
             if (Context.User.Id != userId) return;
 
+            if (bidText.Length < 2) return;
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));
 

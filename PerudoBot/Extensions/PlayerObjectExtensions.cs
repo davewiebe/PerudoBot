@@ -3,20 +3,32 @@ using System.Linq;
 
 namespace PerudoBot.Extensions
 {
-    public static class DiceExtensions
+    public static class PlayerObjectExtensions
     {
-        public static string ToEmoji(this int die)
+        public static string GetMention(this PlayerData playerObject, Database.Data.PerudoBotDbContext _db)
         {
-            if (die == 1) return ":one:";
-            if (die == 2) return ":two:";
-            if (die == 3) return ":three:";
-            if (die == 4) return ":four:";
-            if (die == 5) return ":five:";
-            if (die == 6) return ":six:";
-            if (die == 7) return ":seven:";
-            if (die == 8) return ":eight:";
-            if (die == 9) return ":nine:";
-            return die.ToString();
+            var userId = _db.DiscordPlayers.Single(x => x.PlayerId == playerObject.PlayerId).UserId;
+            return $"<@!{userId}>";
+        }
+
+        public static ulong GetDiscordId(this PlayerData playerObject, Database.Data.PerudoBotDbContext _db)
+        {
+            return _db.DiscordPlayers.Single(x => x.PlayerId == playerObject.PlayerId).UserId;
+        }
+
+        public static string GetBotKey(this PlayerData playerObject, Database.Data.PerudoBotDbContext _db)
+        {
+            var discordPlayer = _db.DiscordPlayers.Single(x => x.PlayerId == playerObject.PlayerId);
+            var key = discordPlayer.BotKey;
+
+            if (key == null)
+            {
+                return discordPlayer.Player.Name; 
+            } 
+            else
+            {
+                return key;
+            }
         }
     }
 }

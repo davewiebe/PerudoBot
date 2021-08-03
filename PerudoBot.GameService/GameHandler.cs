@@ -68,7 +68,8 @@ namespace PerudoBot.GameService
                 {
                     Name = name
                 },
-                IsBot = isBot
+                IsBot = isBot,
+                BotKey = name
             };
             _db.DiscordPlayers.Add(discordPlayer);
             _db.SaveChanges();

@@ -1,16 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using PerudoBot.Database.Data;
-using PerudoBot.EloService.Elo;
-using PerudoBot.EloService;
 using PerudoBot.Extensions;
 using PerudoBot.GameService;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
-using System;
 using Newtonsoft.Json;
 
 namespace PerudoBot.Modules
@@ -96,7 +91,7 @@ namespace PerudoBot.Modules
         {
             var mention = player.GetMention(_db);
             var diceText = string.Join(" ", player.Dice);
-            var encoded = SimpleAES.AES256.Encrypt(diceText, "BeginnerBot");
+            var encoded = SimpleAES.AES256.Encrypt(diceText, player.GetBotKey(_db));
             await SendMessageAsync($"{mention} ||`deal {encoded}`||");
         }
 

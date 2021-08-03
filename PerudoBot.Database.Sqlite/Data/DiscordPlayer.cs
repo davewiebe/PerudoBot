@@ -14,5 +14,6 @@ namespace PerudoBot.Database.Data
         public virtual Player Player { get; set; }
         public bool IsAdministrator { get; set; }
         public bool IsBot { get; set; }
+        public string BotKey { get; set; }
     }
 }
