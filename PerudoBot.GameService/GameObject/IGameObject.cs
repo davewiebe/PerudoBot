@@ -10,7 +10,7 @@ namespace PerudoBot.GameService
         public void Bid(int playerId, int quantity, int pips);
         public PlayerData GetCurrentPlayer();
         public int GetCurrentRoundNumber();
-        public bool BidValidate(int playerId, int quanity, int pips);
+        public bool BidValidate(int playerId, int quantity, int pips);
         public List<PlayerData> GetAllPlayers();
         public LiarResult Liar(int playerId);
         public bool CreateGame();
