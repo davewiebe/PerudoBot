@@ -102,7 +102,7 @@ namespace PerudoBot.GameService
 
         public void ReversePlayerOrder()
         {
-            ReversePlayerOrder();
+            _game.ReversePlayerOrder();
         }
     }
 }
