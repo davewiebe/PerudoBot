@@ -87,7 +87,7 @@ namespace PerudoBot.Modules
                 .ConfigureAwait(false);
         }
 
-        private async Task SendEncryptedDiceAsync(PlayerData player, string botKey)
+        private async Task SendEncryptedDiceAsync(PlayerData player)
         {
             var mention = player.GetMention(_db);
             var diceText = string.Join(" ", player.Dice);
@@ -114,7 +114,7 @@ namespace PerudoBot.Modules
 
                 if (user.IsBot)
                 {
-                    await SendEncryptedDiceAsync(player, "BeginnerBot");
+                    await SendEncryptedDiceAsync(player);
                 }
                 else
                 {
