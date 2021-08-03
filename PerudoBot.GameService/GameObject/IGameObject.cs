@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PerudoBot.Database.Data;
+using System.Collections.Generic;
 
 namespace PerudoBot.GameService
 {
@@ -6,10 +7,10 @@ namespace PerudoBot.GameService
     {
         public void OnEndOfRound();
         public void OnEndOfGame();
-        public bool Bid(int playerId, int quantity, int pips);
+        public void Bid(int playerId, int quantity, int pips);
         public PlayerData GetCurrentPlayer();
         public int GetCurrentRoundNumber();
-        public bool BidReverse(int playerId, int quantity, int pips);
+        public bool BidValidate(int playerId, int quanity, int pips);
         public List<PlayerData> GetAllPlayers();
         public LiarResult Liar(int playerId);
         public bool CreateGame();
@@ -17,7 +18,11 @@ namespace PerudoBot.GameService
         public bool SetModeSuddenDeath();
         public bool SetModeVariable();
         public RoundStatus StartNewRound();
-        void ShufflePlayers();
+        public void ShufflePlayers();
+        public Bid GetPreviousBid();
         string GetGameMode();
+        public bool HasBots();
+        public List<int> GetAllDice();
+        public void ReversePlayerOrder();
     }
 }

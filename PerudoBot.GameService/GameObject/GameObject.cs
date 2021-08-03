@@ -266,61 +266,33 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
         }
 
-        public bool BidReverse(int playerId, int quantity, int pips)
+        public void ReversePlayerOrder()
         {
-            return Bid(playerId, quantity, pips, true);
-        }
-        public bool Bid(int playerId, int quantity, int pips)
-        {
-            return Bid(playerId, quantity, pips, false);
-        }
-        private bool Bid(int playerId, int quantity, int pips, bool reverse = false)
-        {
-            var isBidValid = BidValidate(playerId, quantity, pips);
-
-            if (!isBidValid) return false;
-
-
-            if (reverse)
+            var turnOrder = 1;
+            foreach (var gamePlayer in _game.GamePlayers.OrderByDescending(x => x.TurnOrder))
             {
-                var previousBid = _game.CurrentRound
-                    .Actions.OfType<Bid>()
-                    .LastOrDefault();
-                if (previousBid != null)
-                {
-                    return false;
-                }
-
-                var turnOrder = 1;
-                foreach (var gamePlayer in _game.GamePlayers.OrderByDescending(x => x.TurnOrder))
-                {
-                    gamePlayer.TurnOrder = turnOrder;
-                    turnOrder += 1;
-                }
+                gamePlayer.TurnOrder = turnOrder;
+                turnOrder += 1;
             }
-
-            BidSave(quantity, pips);
-
-            return true;
         }
 
-        private void BidSave(int quantity, int pips)
+        public void Bid(int playerId, int quantity, int pips)
         {
-            var previousBid = _game.CurrentRound
-                .Actions.OfType<Bid>()
-                .LastOrDefault();
+            var previousBid = GetPreviousBid();
 
+            var player = _game.GamePlayers.Single(x => x.PlayerId == playerId);
             var newBid = new Bid
             {
                 Quantity = quantity,
                 Pips = pips,
                 ParentAction = previousBid,
                 Round = _game.CurrentRound,
-                GamePlayer = _game.CurrentGamePlayer,
-                GamePlayerRound = _game.CurrentGamePlayer.CurrentGamePlayerRound,
+                GamePlayer = player,
+                GamePlayerRound = player.CurrentGamePlayerRound,
             };
             // TODO: This is a bit ugly. would prefer only 1 savechanges
             _db.SaveChanges();
+
             _game.GamePlayerTurnId = GetNextActiveGamePlayerId(_game.GamePlayerTurnId);
 
             _game.CurrentRound.Actions.Add(newBid);
@@ -328,7 +300,7 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
         }
 
-        private bool BidValidate(int playerId, int quantity, int pips)
+        public bool BidValidate(int playerId, int quantity, int pips)
         {
             if (_game.CurrentGamePlayer.PlayerId != playerId) return false;
 
@@ -387,7 +359,7 @@ namespace PerudoBot.GameService
             };
 
 
-            var actualQuantity = GetNumberOfDiceMatchingBid(_game, previousBid.Pips);
+            var actualQuantity = GetNumberOfDiceMatchingBid(previousBid.Pips);
             liarResult.ActualQuantity = actualQuantity;
 
             if (previousBid.Quantity <= actualQuantity)
@@ -464,14 +436,18 @@ namespace PerudoBot.GameService
             }
         }
 
-        private int GetNumberOfDiceMatchingBid(Game game, int pips) // turn into extension method
+        private int GetNumberOfDiceMatchingBid(int pips) // turn into extension method
         {
-            var allDice = game.CurrentRound
+            return GetAllDice().Count(x => x == pips || x == 1);
+        }
+
+        public List<int> GetAllDice()
+        {
+            return _game.CurrentRound
                 .GamePlayerRounds
                 .Where(x => x.Dice != "")
-                .SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)));
-
-            return allDice.Count(x => x == pips || x == 1);
+                .SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)))
+                .ToList();
         }
 
         public PlayerData GetCurrentPlayer()
@@ -511,6 +487,18 @@ namespace PerudoBot.GameService
         public string GetGameMode()
         {
             return _game.Mode;
+        }
+
+        public bool HasBots()
+        {
+            return _game.GamePlayers.Any(p => p.Player.DiscordPlayer.IsBot && p.NumberOfDice > 0);
+        }
+
+        public Bid GetPreviousBid()
+        {
+            return _game.CurrentRound
+                .Actions.OfType<Bid>()
+                .LastOrDefault();
         }
     }
 }

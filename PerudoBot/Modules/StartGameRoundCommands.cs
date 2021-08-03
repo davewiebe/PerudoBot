@@ -9,6 +9,9 @@ using PerudoBot.GameService;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using System;
+using Newtonsoft.Json;
 
 namespace PerudoBot.Modules
 {
@@ -32,7 +35,7 @@ namespace PerudoBot.Modules
 
         private async Task StartNewRound(IGameObject game)
         {
-            var roundStatus = game.StartNewRound();
+            var roundStatus = game.StartNewRound();            
 
             if (roundStatus.IsActive == false)
             {
@@ -48,7 +51,21 @@ namespace PerudoBot.Modules
 
             await SendNewRoundStatus(roundStatus);
             await SendOutDice(roundStatus.Players);
-            await SendMessageAsync($"A new round has begun. {game.GetCurrentPlayer().GetMention(_db)} goes first");
+
+            var nextPlayer = game.GetCurrentPlayer();
+            await SendMessageAsync($"A new round has begun. {nextPlayer.GetMention(_db)} goes first");
+
+            if (game.HasBots())
+            {
+                var botMessage = new
+                {
+                    nextPlayer = nextPlayer.GetDiscordId(_db),
+                    diceCount = game.GetAllDice().Count,
+                    round = game.GetCurrentRoundNumber()
+                };
+
+                await SendMessageAsync($"||`@bots update {JsonConvert.SerializeObject(botMessage)}`||");
+            }
         }
 
         private async Task SendNewRoundStatus(RoundStatus roundStatus)
@@ -75,6 +92,14 @@ namespace PerudoBot.Modules
                 .ConfigureAwait(false);
         }
 
+        private async Task SendEncryptedDiceAsync(PlayerData player, string botKey)
+        {
+            var mention = player.GetMention(_db);
+            var diceText = string.Join(" ", player.Dice);
+            var encoded = SimpleAES.AES256.Encrypt(diceText, "BeginnerBot");
+            await SendMessageAsync($"{mention} ||`deal {encoded}`||");
+        }
+
         private async Task SendOutDice(List<PlayerData> playerDice)
         {
             var playerIds = playerDice.Select(x => x.PlayerId).ToList();
@@ -94,7 +119,7 @@ namespace PerudoBot.Modules
 
                 if (user.IsBot)
                 {
-                    await SendMessageAsync($"{player.Name}'s Dice: {string.Join(" ", diceEmojis)}");
+                    await SendEncryptedDiceAsync(player, "BeginnerBot");
                 }
                 else
                 {

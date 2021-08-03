@@ -33,7 +33,7 @@ namespace PerudoBot.GameService
             if (game != null) return false;
 
 
-            var discordPlayer = CreateAndGetDiscordPlayer(userId, name);
+            var discordPlayer = CreateAndGetDiscordPlayer(userId, name, isBot);
 
             var playerIds = (List<int>)_cache.Get($"players{_channelId}");
             if (playerIds == null) playerIds = new List<int>();
@@ -47,7 +47,7 @@ namespace PerudoBot.GameService
             return true;
         }
 
-        private DiscordPlayer CreateAndGetDiscordPlayer(ulong userId, string name)
+        private DiscordPlayer CreateAndGetDiscordPlayer(ulong userId, string name, bool isBot)
         {
             var discordPlayer = _db.DiscordPlayers
                 .Include(x => x.Player)
@@ -67,7 +67,8 @@ namespace PerudoBot.GameService
                 Player = new Player
                 {
                     Name = name
-                }
+                },
+                IsBot = isBot
             };
             _db.DiscordPlayers.Add(discordPlayer);
             _db.SaveChanges();
