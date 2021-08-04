@@ -17,7 +17,7 @@ namespace PerudoBot.Modules
                 "*who says you have to have new features to be 2.0?*";
 
             var builder = new EmbedBuilder()
-                            .WithTitle($"PerudoBot2.0 - Version 2.1")
+                            .WithTitle($"PerudoBot2.0 - Version 2.2")
                             .AddField("Less features like...", commands, inline: false);
             var embed = builder.Build();
 

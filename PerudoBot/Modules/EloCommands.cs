@@ -39,7 +39,6 @@ namespace PerudoBot.Modules
                 message += $"\n{playerElo.Player.Name}: {playerElo.Rating}";
             }
             await SendMessageAsync(message);
-
         }
 
         private async Task CalculateEloAsync(IGameObject game)
