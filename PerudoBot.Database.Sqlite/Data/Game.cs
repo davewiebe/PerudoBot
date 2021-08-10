@@ -12,7 +12,7 @@ namespace PerudoBot.Database.Data
     {
         public int Id { get; set; }
         public int State { get; set; }
-
+        public ulong BotUpdateMessageId { get; set; }
         public int GamePlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
         public ulong GuildId { get; set; }

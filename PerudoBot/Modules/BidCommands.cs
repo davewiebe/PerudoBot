@@ -2,9 +2,6 @@
 using Discord.Commands;
 using Newtonsoft.Json;
 using PerudoBot.Extensions;
-using PerudoBot.GameService;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace PerudoBot.Modules
@@ -36,6 +33,8 @@ namespace PerudoBot.Modules
 
             if (Context.User.Id != userId) return;
 
+            
+
             if (bidText.Length < 2) return;
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));
@@ -54,8 +53,6 @@ namespace PerudoBot.Modules
                 return;
             }
 
-            
-
             if (isReverse)
             {
                 game.ReversePlayerOrder();
@@ -66,8 +63,7 @@ namespace PerudoBot.Modules
             DeleteCommandFromDiscord();
 
             var nextPlayer = game.GetCurrentPlayer();
-
-            await SendMessageAsync($"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { nextPlayer.GetMention(_db)} is up.");
+            var updateMessage = $"{currentPlayer.Name} bids `{quantity}` ˣ { pips.ToEmoji() }. { nextPlayer.GetMention(_db)} is up.";
 
             if (game.HasBots())
             {
@@ -79,8 +75,13 @@ namespace PerudoBot.Modules
                     action = BidToActionIndex(quantity, pips),
                 };
 
-                await SendMessageAsync($"||`@bots update {JsonConvert.SerializeObject(botMessage)}`||");
+                await Context.Message.Channel.ModifyMessageAsync(game.BotUpdateMessageId,
+                    x => x.Content = $"||`{JsonConvert.SerializeObject(botMessage)}`||");
+
+                updateMessage += $" ||`@bots update {game.BotUpdateMessageId}`||";
             }
+
+            await SendMessageAsync(updateMessage);
         }
 
         // Unwrap bid to it's action index where 0:1x2, 1:1x3, 2:1x4, etc.

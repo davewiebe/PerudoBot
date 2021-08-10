@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerudoBot.Database.Data;
 
 namespace PerudoBot.Database.Sqlite.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    partial class PerudoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210810032758_AddBotUpdateMessageIdColumn")]
+    partial class AddBotUpdateMessageIdColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,33 +188,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.HasIndex("RoundId");
 
                     b.ToTable("GamePlayerRounds");
-                });
-
-            modelBuilder.Entity("PerudoBot.Database.Data.Metadata", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("GamePlayerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Key")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("PlayerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GamePlayerId");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("Metadata");
                 });
 
             modelBuilder.Entity("PerudoBot.Database.Data.Player", b =>
@@ -400,17 +375,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.Navigation("Round");
                 });
 
-            modelBuilder.Entity("PerudoBot.Database.Data.Metadata", b =>
-                {
-                    b.HasOne("PerudoBot.Database.Data.GamePlayer", null)
-                        .WithMany("Metadata")
-                        .HasForeignKey("GamePlayerId");
-
-                    b.HasOne("PerudoBot.Database.Data.Player", null)
-                        .WithMany("Metadata")
-                        .HasForeignKey("PlayerId");
-                });
-
             modelBuilder.Entity("PerudoBot.Database.Data.PlayerElo", b =>
                 {
                     b.HasOne("PerudoBot.Database.Data.EloSeason", "EloSeason")
@@ -456,8 +420,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
             modelBuilder.Entity("PerudoBot.Database.Data.GamePlayer", b =>
                 {
                     b.Navigation("GamePlayerRounds");
-
-                    b.Navigation("Metadata");
                 });
 
             modelBuilder.Entity("PerudoBot.Database.Data.GamePlayerRound", b =>
@@ -470,8 +432,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                     b.Navigation("DiscordPlayer");
 
                     b.Navigation("GamesPlayed");
-
-                    b.Navigation("Metadata");
 
                     b.Navigation("PlayerElos");
                 });
