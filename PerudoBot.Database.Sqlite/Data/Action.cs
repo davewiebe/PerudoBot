@@ -23,7 +23,7 @@ namespace PerudoBot.Database.Data
         public int GamePlayerRoundId { get; set; }
 
         public int RoundId { get; set; }
-        public Round Round { get; set; }
+        public virtual Round Round { get; set; }
 
         public int? ParentActionId { get; set; }
 

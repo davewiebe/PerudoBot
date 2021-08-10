@@ -28,7 +28,9 @@ namespace PerudoBot.GameService.Extensions
                 PlayerId = gamePlayer.Player.Id,
                 Rank = gamePlayer.Rank,
                 TurnOrder = gamePlayer.TurnOrder,
-                Dice = dice
+                Dice = dice,
+                PlayerMetadata = gamePlayer.Player.Metadata.ToDictionary(x => x.Key, x => x.Value),
+                GamePlayerMetadata = gamePlayer.Metadata.ToDictionary(x => x.Key, x => x.Value)
             };
         }
     }

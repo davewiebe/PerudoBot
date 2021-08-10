@@ -58,7 +58,8 @@ namespace PerudoBot
                 .AddLogging(configure => configure.AddSerilog())
                 .AddEntityFrameworkSqlite()
                 .AddDbContext<PerudoBotDbContext>(options =>
-                    options.UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
+                    options.UseLazyLoadingProxies()
+                           .UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
                 .BuildServiceProvider();
 
             var db = _services.GetRequiredService<PerudoBotDbContext>();

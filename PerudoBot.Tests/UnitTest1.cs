@@ -42,9 +42,8 @@ namespace PerudoBot.Tests
             game.Bid(1, 10, 6);
             var liarResult = game.Liar(2);
 
-            // complicated. because they weren't eliminated during this round, so it looks like they still have dice
-            // at this point -- and not eliminated.
-            //var wasEliminated = liarResult.PlayerWhoLostDice.IsEliminated;
+            var wasEliminated = liarResult.PlayerWhoLostDice.IsEliminated;
+            var numberOfDiceRemaining = liarResult.PlayerWhoLostDice.NumberOfDice;
 
             var gameMode = game.GetGameMode();
             var eloHandler = new EloHandler(_db, guildId, gameMode);

@@ -205,7 +205,9 @@ namespace PerudoBot.GameService
                         Name = x.Player.Name,
                         Rank = x.Rank,
                         NumberOfDice = x.NumberOfDice,
-                        PlayerId = x.Player.Id
+                        PlayerId = x.Player.Id,
+                        PlayerMetadata = x.Player.Metadata.ToDictionary(x => x.Key, x => x.Value),
+                        GamePlayerMetadata = x.Metadata.ToDictionary(x => x.Key, x => x.Value)
                     }).ToList()
                 };
             }

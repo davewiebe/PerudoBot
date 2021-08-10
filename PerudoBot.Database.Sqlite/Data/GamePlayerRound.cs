@@ -7,12 +7,12 @@ namespace PerudoBot.Database.Data
     {
         public int Id { get; set; }
         public int RoundId { get; set; }
-        public Round Round { get; set; }
+        public virtual Round Round { get; set; }
 
         public int GamePlayerId { get; set; }
-        public GamePlayer GamePlayer { get; set; }
+        public virtual GamePlayer GamePlayer { get; set; }
 
-        public ICollection<Action> Actions { get; set; }
+        public virtual ICollection<Action> Actions { get; set; }
 
         public string Dice { get; set; }
     }

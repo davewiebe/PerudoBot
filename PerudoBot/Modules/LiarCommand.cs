@@ -12,15 +12,12 @@ namespace PerudoBot.Modules
     {
 
         [Command("liar")]
+        [Alias("iiar")]
         public async Task Liar()
         {
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
 
-            //var currentPlayer = game.GetCurrentPlayer();
-
-            //var userId = GetUserId(currentPlayer);
-            //if (Context.User.Id != userId) return;
             var playerId = GetPlayerId(Context.User.Id);
 
             var liarResult = game.Liar(playerId);
@@ -34,6 +31,14 @@ namespace PerudoBot.Modules
             Thread.Sleep(3000);
 
             await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention(_db)} loses {liarResult.DiceLost} dice. :fire:");
+
+            if (liarResult.PlayerWhoLostDice.IsEliminated)
+            {
+                await SendMessageAsync($":fire::skull::fire: {liarResult.PlayerWhoLostDice.Name} defeated :fire::skull::fire:");
+
+                var deathRattle = liarResult.PlayerWhoLostDice.GetPlayerMetadata("deathrattle");
+                if (deathRattle != null) await SendMessageAsync(deathRattle);
+            }
 
             await SendRoundSummary();
 

@@ -35,6 +35,10 @@ namespace PerudoBot.Modules
             if (roundStatus.IsActive == false)
             {
                 await SendMessageAsync($":trophy: {roundStatus.Winner.GetMention(_db)} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
+
+                var winrattle = roundStatus.Winner.GetPlayerMetadata("winrattle");
+                if (winrattle != null) await SendMessageAsync(winrattle);
+
                 await UpdateAvatar("coy.png");
 
                 await CalculateEloAsync(game);

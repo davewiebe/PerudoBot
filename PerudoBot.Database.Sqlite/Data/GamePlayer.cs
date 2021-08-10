@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PerudoBot.Database.Data
 {
-    public class GamePlayer
+    public class GamePlayer : MetadataEntity
     {
         public int Id { get; set; }
 

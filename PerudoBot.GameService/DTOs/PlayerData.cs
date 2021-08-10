@@ -17,5 +17,18 @@ namespace PerudoBot.GameService
         }
 
         public bool IsEliminated => NumberOfDice == 0;
+
+        internal Dictionary<string, string> PlayerMetadata { get; set; }
+
+        public string GetPlayerMetadata(string key)
+        {
+            return PlayerMetadata[key];
+        }
+
+        internal Dictionary<string, string> GamePlayerMetadata { get; set; }
+        public string GetGamePlayerMetadata(string key)
+        {
+            return GamePlayerMetadata[key];
+        }
     }
 }
