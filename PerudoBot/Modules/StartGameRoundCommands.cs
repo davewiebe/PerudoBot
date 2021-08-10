@@ -65,7 +65,7 @@ namespace PerudoBot.Modules
                 var botMessage = new
                 {
                     nextPlayer = nextPlayer.GetDiscordId(_db),
-                    diceCount = game.GetAllDice().Count,
+                    gameDice = game.GetAllDice().Count,
                     round = game.GetCurrentRoundNumber()
                 };
 
