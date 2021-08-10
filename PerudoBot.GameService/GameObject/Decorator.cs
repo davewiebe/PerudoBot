@@ -104,5 +104,15 @@ namespace PerudoBot.GameService
         {
             _game.ReversePlayerOrder();
         }
+
+        public string GetMetadata(string key)
+        {
+            return _game.GetMetadata(key);
+        }
+
+        public void SetMetadata(string key, string value)
+        {
+            _game.SetMetadata(key, value);
+        }
     }
 }

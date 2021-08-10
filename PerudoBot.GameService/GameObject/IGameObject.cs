@@ -24,5 +24,7 @@ namespace PerudoBot.GameService
         public bool HasBots();
         public List<int> GetAllDice();
         public void ReversePlayerOrder();
+        public string GetMetadata(string key);
+        public void SetMetadata(string key, string value);
     }
 }

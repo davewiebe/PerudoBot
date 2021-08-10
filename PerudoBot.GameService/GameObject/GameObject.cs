@@ -502,5 +502,15 @@ namespace PerudoBot.GameService
                 .Actions.OfType<Bid>()
                 .LastOrDefault();
         }
+
+        public string GetMetadata(string key)
+        {
+            return _game.GetMetadata(key);
+        }
+
+        public void SetMetadata(string key, string value)
+        {
+            _game.SetMetadata(key, value);
+        }
     }
 }

@@ -23,6 +23,12 @@ namespace PerudoBot.Modules
 
             await SendMessageAsync($"Starting the game!\nUse `!bid 2 2s` or `!liar` to play.");
 
+            if (game.HasBots())
+            {
+                var updateMessage = await SendMessageAsync("||{}||");
+                game.SetMetadata("BotUpdateMessageId", updateMessage.Id.ToString());
+            }
+
             game.ShufflePlayers();
 
             await StartNewRound(game);
@@ -52,19 +58,24 @@ namespace PerudoBot.Modules
             await SendOutDice(roundStatus.Players);
 
             var nextPlayer = game.GetCurrentPlayer();
-            await SendMessageAsync($"A new round has begun. {nextPlayer.GetMention(_db)} goes first");
+            var updateMessage = $"A new round has begun. {nextPlayer.GetMention(_db)} goes first";
 
             if (game.HasBots())
             {
                 var botMessage = new
                 {
                     nextPlayer = nextPlayer.GetDiscordId(_db),
-                    diceCount = game.GetAllDice().Count,
+                    gameDice = game.GetAllDice().Count,
                     round = game.GetCurrentRoundNumber()
                 };
 
-                await SendMessageAsync($"||`@bots update {JsonConvert.SerializeObject(botMessage)}`||");
+                await Context.Message.Channel.ModifyMessageAsync(ulong.Parse(game.GetMetadata("BotUpdateMessageId")),
+                    x => x.Content = $"||`{JsonConvert.SerializeObject(botMessage)}`||");
+
+                updateMessage += $" ||`@bots update {game.GetMetadata("BotUpdateMessageId")}`||";
             }
+
+            await SendMessageAsync(updateMessage);
         }
 
         private async Task SendNewRoundStatus(RoundStatus roundStatus)
