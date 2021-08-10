@@ -5,7 +5,6 @@ namespace PerudoBot.GameService
 {
     public interface IGameObject
     {
-        public ulong BotUpdateMessageId { get; set; }
         public void OnEndOfRound();
         public void OnEndOfGame();
         public void Bid(int playerId, int quantity, int pips);

@@ -14,16 +14,6 @@ namespace PerudoBot.GameService
         private readonly ulong _guildId;
         private Game _game;
 
-        public ulong BotUpdateMessageId
-        {
-            get { return _game.BotUpdateMessageId; }
-            set
-            {
-                _game.BotUpdateMessageId = value;
-                _db.SaveChanges();
-            }
-        }
-
         public GameObject(PerudoBotDbContext db, ulong channelId, ulong guildId)
         {
             _db = db;

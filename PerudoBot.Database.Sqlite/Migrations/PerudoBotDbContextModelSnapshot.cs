@@ -108,9 +108,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("BotUpdateMessageId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<ulong>("ChannelId")
                         .HasColumnType("INTEGER");
 
