@@ -8,11 +8,10 @@ using System.Runtime.CompilerServices;
 
 namespace PerudoBot.Database.Data
 {
-    public class Game
+    public class Game : MetadataEntity
     {
         public int Id { get; set; }
         public int State { get; set; }
-        public ulong BotUpdateMessageId { get; set; }
         public int GamePlayerTurnId { get; set; }
         public ulong ChannelId { get; set; }
         public ulong GuildId { get; set; }

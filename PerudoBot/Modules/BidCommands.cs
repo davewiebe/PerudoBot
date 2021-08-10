@@ -75,10 +75,10 @@ namespace PerudoBot.Modules
                     playerDice = currentPlayer.Dice.Count
                 };
 
-                await Context.Message.Channel.ModifyMessageAsync(game.BotUpdateMessageId,
+                await Context.Message.Channel.ModifyMessageAsync(ulong.Parse(game.GetMetadata("BotUpdateMessageId")),
                     x => x.Content = $"||`{JsonConvert.SerializeObject(botMessage)}`||");
 
-                updateMessage += $" ||`@bots update {game.BotUpdateMessageId}`||";
+                updateMessage += $" ||`@bots update {game.GetMetadata("BotUpdateMessageId")}`||";
             }
 
             await SendMessageAsync(updateMessage);

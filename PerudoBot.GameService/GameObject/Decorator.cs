@@ -11,11 +11,6 @@ namespace PerudoBot.GameService
     {
         protected IGameObject _game;
 
-        public ulong BotUpdateMessageId {
-            get { return _game.BotUpdateMessageId; }
-            set { _game.BotUpdateMessageId = value; }
-        }
-
         public Decorator(IGameObject game)
         {
             _game = game;
@@ -108,6 +103,16 @@ namespace PerudoBot.GameService
         public void ReversePlayerOrder()
         {
             _game.ReversePlayerOrder();
+        }
+
+        public string GetMetadata(string key)
+        {
+            return _game.GetMetadata(key);
+        }
+
+        public void SetMetadata(string key, string value)
+        {
+            _game.SetMetadata(key, value);
         }
     }
 }
