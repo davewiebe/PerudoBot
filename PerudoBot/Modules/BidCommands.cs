@@ -33,8 +33,6 @@ namespace PerudoBot.Modules
 
             if (Context.User.Id != userId) return;
 
-            
-
             if (bidText.Length < 2) return;
             var quantity = int.Parse(bidText[0]);
             var pips = int.Parse(bidText[1].Trim('s'));
@@ -69,10 +67,12 @@ namespace PerudoBot.Modules
             {
                 var botMessage = new
                 {
+                    currentPlayer = currentPlayer.GetDiscordId(_db),
                     nextPlayer = nextPlayer.GetDiscordId(_db),
-                    diceCount = game.GetAllDice().Count,
                     round = game.GetCurrentRoundNumber(),
                     action = BidToActionIndex(quantity, pips),
+                    gameDice = game.GetAllDice().Count,
+                    playerDice = currentPlayer.Dice.Count
                 };
 
                 await Context.Message.Channel.ModifyMessageAsync(game.BotUpdateMessageId,
