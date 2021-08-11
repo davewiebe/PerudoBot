@@ -33,6 +33,18 @@ namespace PerudoBot.Modules
             { RetryMode = RetryMode.RetryRatelimit };
             return await base.ReplyAsync(message, options: requestOptions, isTTS: isTTS);
         }
+        private async Task SendTempMessageAsync(string message, bool isTTS = false)
+        {
+            var requestOptions = new RequestOptions()
+            { RetryMode = RetryMode.RetryRatelimit };
+            var sentMessage = await base.ReplyAsync(message, options: requestOptions, isTTS: isTTS);
+            try
+            {
+                _ = sentMessage.DeleteAsync();
+            }
+            catch
+            { }
+        }
 
         private void SetGuildAndChannel()
         {
@@ -46,9 +58,11 @@ namespace PerudoBot.Modules
                 .Single(x => x.Id == currentPlayer.PlayerId)
                 .DiscordPlayer.UserId;
         }
-        private int GetPlayerId(ulong userId)
+        private int GetPlayerId(ulong userId, ulong guildId)
         {
             return _db.Players
+                .AsQueryable()
+                .Where(x => x.DiscordPlayer.GuildId == guildId)
                 .Single(x => x.DiscordPlayer.UserId == userId)
                 .Id;
         }

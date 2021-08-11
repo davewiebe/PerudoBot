@@ -124,7 +124,10 @@ namespace PerudoBot.Modules
         {
             var gamePlayers = _gameHandler.GetSetupPlayerIds();
 
-            var listOfPlayers = gamePlayers.Select(x => $"{x.Name}").ToList();
+            var listOfPlayers = gamePlayers
+                .Select(x => $"{x.Name}")
+                .ToList()
+                .OrderBy(x => x);
 
             var gameType = "Sudden Death";
             if (_gameHandler.GetMode() == GameMode.Variable) gameType = "Variable";
@@ -135,7 +138,7 @@ namespace PerudoBot.Modules
 
             var builder = new EmbedBuilder()
                             .WithTitle($"New Game")
-                            .AddField($"Players", $"{playerListText}", inline: false)
+                            .AddField($"Players ({listOfPlayers.Count()})", $"{playerListText}", inline: false)
                             .AddField($"Game Mode", $"{gameType}", inline: false);
 
             var embed = builder.Build();

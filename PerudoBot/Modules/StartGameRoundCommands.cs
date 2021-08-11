@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace PerudoBot.Modules
 {
@@ -43,8 +44,16 @@ namespace PerudoBot.Modules
                 await SendMessageAsync($":trophy: {roundStatus.Winner.GetMention(_db)} is the winner with `{roundStatus.Winner.NumberOfDice}` dice remaining! :trophy:");
 
                 var winrattle = roundStatus.Winner.GetPlayerMetadata("winrattle");
-                if (winrattle != null) await SendMessageAsync(winrattle);
 
+                if (winrattle != null)
+                {
+                    if (winrattle.ToLower().StartsWith("!gif "))
+                    {
+                        await SendTempMessageAsync(winrattle);
+                        Thread.Sleep(1500);
+                    }
+                    else await SendMessageAsync(winrattle);
+                }
                 await UpdateAvatar("coy.png");
 
                 await CalculateEloAsync(game);

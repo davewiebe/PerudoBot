@@ -12,35 +12,54 @@ namespace PerudoBot.Modules
         [Command("rattles")]
         public async Task Rattles(params string[] rattle)
         {
-            await SendMessageAsync($"Set rattles with `!deathrattle giflink` and `!winrattle giflink`");
+            await SendMessageAsync($"Set rattles with `!deathrattle giflink` and `!winrattle giflink` (I've PM'd you yours)");
+
+            var player = _db.Players
+                .Include(x => x.DiscordPlayer)
+                .Include(x => x.Metadata)
+                .AsQueryable()
+                .First(x => x.DiscordPlayer.UserId == Context.User.Id);
+
+            var deathrattle = player.GetMetadata("deathrattle");
+            var winrattle = player.GetMetadata("winrattle");
+
+            var message = $"**Your rattles**\ndeathrattle:\n{deathrattle}\n\nwinrattle:\n{winrattle}";
+            var requestOptions = new RequestOptions() { RetryMode = RetryMode.RetryRatelimit };
+            await Context.User.SendMessageAsync(message, options: requestOptions);
+
         }
 
         [Command("deathrattle")]
         public async Task DeathRattle(params string[] rattle)
         {
-            var player = _db.Players
+            var players = _db.Players
                 .Include(x => x.DiscordPlayer)
                 .Include(x => x.Metadata)
-                .AsQueryable().Single(x => x.DiscordPlayer.UserId == Context.User.Id);
+                .AsQueryable()
+                .Where(x => x.DiscordPlayer.UserId == Context.User.Id);
 
-            player.SetMetadata("deathrattle", string.Join(" ", rattle));
+            foreach (var player in players)
+            {
+                player.SetMetadata("deathrattle", string.Join(" ", rattle));
+            }
 
             await SendMessageAsync($"Death rattle set.");
         }
         [Command("winrattle")]
         public async Task WinRattle(params string[] rattle)
         {
-            var player = _db.Players
+            var players = _db.Players
                 .Include(x => x.DiscordPlayer)
                 .Include(x => x.Metadata)
                 .AsQueryable()
-                .Where(x => x.DiscordPlayer.GuildId == Context.Guild.Id)
-                .Single(x => x.DiscordPlayer.UserId == Context.User.Id);
+                .Where(x => x.DiscordPlayer.UserId == Context.User.Id);
 
-            player.SetMetadata("winrattle", string.Join(" ", rattle));
+            foreach (var player in players)
+            {
+                player.SetMetadata("winrattle", string.Join(" ", rattle));
+            }
 
             await SendMessageAsync($"Win rattle set.");
         }
-
     }
 }

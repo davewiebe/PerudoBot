@@ -18,7 +18,7 @@ namespace PerudoBot.Modules
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
 
-            var playerId = GetPlayerId(Context.User.Id);
+            var playerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
 
             var liarResult = game.Liar(playerId);
             if (liarResult == null) return;
@@ -37,7 +37,15 @@ namespace PerudoBot.Modules
                 await SendMessageAsync($":fire::skull::fire: {liarResult.PlayerWhoLostDice.Name} defeated :fire::skull::fire:");
 
                 var deathRattle = liarResult.PlayerWhoLostDice.GetPlayerMetadata("deathrattle");
-                if (deathRattle != null) await SendMessageAsync(deathRattle);
+                if (deathRattle != null)
+                {
+                    if (deathRattle.ToLower().StartsWith("!gif "))
+                    {
+                        await SendTempMessageAsync(deathRattle);
+                        Thread.Sleep(1500);
+                    }
+                    else await SendMessageAsync(deathRattle);
+                }
             }
 
             await SendRoundSummary();

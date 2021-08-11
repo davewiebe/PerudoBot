@@ -22,13 +22,13 @@ namespace PerudoBot.GameService
 
         public string GetPlayerMetadata(string key)
         {
-            return PlayerMetadata[key];
+            return PlayerMetadata.GetValueOrDefault(key);
         }
 
         internal Dictionary<string, string> GamePlayerMetadata { get; set; }
         public string GetGamePlayerMetadata(string key)
         {
-            return GamePlayerMetadata[key];
+            return GamePlayerMetadata.GetValueOrDefault(key);
         }
     }
 }
