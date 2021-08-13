@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
+using Perudo.GameHandler;
 using PerudoBot.Extensions;
 using System.Threading.Tasks;
 
@@ -26,6 +27,8 @@ namespace PerudoBot.Modules
         {
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
+
+            //var x = new GameExtensions(game);
 
             if (game == null) return;
             var currentPlayer = game.GetCurrentPlayer();
