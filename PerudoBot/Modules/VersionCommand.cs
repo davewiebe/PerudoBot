@@ -12,12 +12,12 @@ namespace PerudoBot.Modules
             var commands =
                 $"`!exact` not implemented\n" +
                 $"`!deal` not implemented\n" +
-                $"`!rattles` not implemented\n" +
+                $"`!tauntrattle` not implemented\n" +
                 $"`!note` not implemented\n" +
                 "*who says you have to have new features to be 2.0?*";
 
             var builder = new EmbedBuilder()
-                            .WithTitle($"PerudoBot2.0 - Version 2.2")
+                            .WithTitle($"PerudoBot2.0 - Version 2.3")
                             .AddField("Less features like...", commands, inline: false);
             var embed = builder.Build();
 

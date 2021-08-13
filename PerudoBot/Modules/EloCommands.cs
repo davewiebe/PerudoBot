@@ -41,7 +41,7 @@ namespace PerudoBot.Modules
             await SendMessageAsync(message);
         }
 
-        private async Task CalculateEloAsync(IGameObject game)
+        private async Task CalculateEloAsync(GameObject game)
         {
             var gameMode = game.GetGameMode();
             var eloHandler = new EloHandler(_db, Context.Guild.Id, gameMode);

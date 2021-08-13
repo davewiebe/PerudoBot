@@ -82,6 +82,35 @@ namespace PerudoBot.Modules
             //await DisplaySetupGamePlayers(_gameObject);
         }
 
+
+        [Command("all")]
+        public async Task AddAll(params string[] asdf)
+        {
+            SetGuildAndChannel();
+
+            var game = _gameHandler.GetActiveGame();
+            if (game != null) return;
+
+            var voiceChannel = (Context.User as IVoiceState).VoiceChannel.Id;
+
+            var users = Context.Guild.Channels.First(x => x.Id == voiceChannel).Users;
+
+            foreach (var user in users)
+            {
+                var guildUser = Context.Guild.GetUser(user.Id);
+
+                if (guildUser == null)
+                {
+                    await SendMessageAsync($"Unable to get guild info for {Context.User.Username}. Was not able to add user.");
+                }
+                else
+                {
+                    _gameHandler.AddPlayer(Context.User.Id, Context.Guild.Id, guildUser.Nickname ?? guildUser.Username, Context.User.IsBot);
+                }
+            }
+            await DisplaySetupGamePlayers();
+        }
+
         [Command("add")]
         [Alias("a")]
         public async Task AddPlayer(params string[] users)

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PerudoBot.GameService
 {
-    public class GameObject : IGameObject
+    public class GameObject
     {
         private readonly PerudoBotDbContext _db;
         private readonly ulong _channelId;

@@ -96,13 +96,12 @@ namespace PerudoBot.GameService
             _cache.Set($"gamemode{_channelId}", "variable");
         }
 
-        public IGameObject CreateGame()
+        public GameObject CreateGame()
         {
             var game = GetActiveGame();
             if (game != null) return null;
 
             game = new GameObject(_db, _channelId, _guildId);
-            game = new ExampleDecorator(game);
 
             game.CreateGame();
 
@@ -122,7 +121,7 @@ namespace PerudoBot.GameService
             return game;
         }
 
-        public IGameObject GetActiveGame()
+        public GameObject GetActiveGame()
         {
             // TODO: Add all required decorators
 

@@ -35,7 +35,7 @@ namespace PerudoBot.Modules
             await StartNewRound(game);
         }
 
-        private async Task StartNewRound(IGameObject game)
+        private async Task StartNewRound(GameObject game)
         {
             var roundStatus = game.StartNewRound();            
 
