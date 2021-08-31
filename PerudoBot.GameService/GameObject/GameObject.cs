@@ -120,7 +120,7 @@ namespace PerudoBot.GameService
                 GameId = _game.Id,
                 Player = player,
                 TurnOrder = numberOfPlayers + 1,
-                NumberOfDice = 5
+                NumberOfDice = _game.Mode == GameMode.Reverse ? 1 : 5
             });
 
             _db.SaveChanges();
@@ -141,6 +141,13 @@ namespace PerudoBot.GameService
             return true;
         }
 
+        public bool SetModeReverse()
+        {
+            _game.Mode = GameMode.Reverse;
+            _db.SaveChanges();
+            return true;
+        }
+
         public List<PlayerData> GetAllPlayers()
         {            
             return _game.GamePlayers
@@ -153,6 +160,7 @@ namespace PerudoBot.GameService
         {
             if (_game.Mode == GameMode.SuddenDeath) return "Sudden Death";
             if (_game.Mode == GameMode.Variable) return "Variable";
+            if (_game.Mode == GameMode.Reverse) return "Reverse";
             return "Error";
         }
 
@@ -367,7 +375,7 @@ namespace PerudoBot.GameService
             if (previousBid.Quantity <= actualQuantity)
             {
                 // Bidder was correct
-                liarResult.DiceLost = GetDiceLost((actualQuantity - previousBid.Quantity) + 1);
+                liarResult.DiceLost = GetDiceLost((actualQuantity - previousBid.Quantity) + 1, PlayerWhoCalledLiar.NumberOfDice);
                 liarResult.IsSuccessful = false;
                 PlayerWhoLostDice = PlayerWhoCalledLiar;
 
@@ -377,7 +385,7 @@ namespace PerudoBot.GameService
             }
             else // Liar caller was correct
             {
-                liarResult.DiceLost = GetDiceLost(previousBid.Quantity - actualQuantity);
+                liarResult.DiceLost = GetDiceLost(previousBid.Quantity - actualQuantity, PlayerWhoBidLast.NumberOfDice);
                 liarResult.IsSuccessful = true;
                 PlayerWhoLostDice = PlayerWhoBidLast;
 
@@ -409,7 +417,7 @@ namespace PerudoBot.GameService
             }
         }
 
-        private int GetDiceLost(int numberOfDiceOffBy)
+        private int GetDiceLost(int numberOfDiceOffBy, int currentDice)
         {
             var gameMode = _game.Mode;
 
@@ -417,7 +425,20 @@ namespace PerudoBot.GameService
             {
                 return numberOfDiceOffBy;
             }
-            return 5;
+
+            if (gameMode == GameMode.SuddenDeath)
+            {
+                return 5;
+            }
+
+            int diceReverseGained = currentDice + numberOfDiceOffBy;
+
+            if (diceReverseGained > 5)
+            {
+                return currentDice;
+            }
+            
+            return -numberOfDiceOffBy;
         }
 
         public int GetCurrentRoundNumber()

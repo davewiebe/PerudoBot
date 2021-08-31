@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using PerudoBot.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -30,7 +31,8 @@ namespace PerudoBot.Modules
             // for dramatic effect
             Thread.Sleep(3000);
 
-            await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention(_db)} loses {liarResult.DiceLost} dice. :fire:");
+            var losesOrGains = liarResult.DiceLost > 0 ? "loses" : "gains"; 
+            await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention(_db)} {losesOrGains} {Math.Abs(liarResult.DiceLost)} dice. :fire:");
 
             if (liarResult.PlayerWhoLostDice.IsEliminated)
             {
