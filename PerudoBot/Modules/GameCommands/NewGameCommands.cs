@@ -58,6 +58,10 @@ namespace PerudoBot.Modules
             {
                 _gameHandler.SetGameModeVariable();
             }
+            else if (options.Any(x => x.ToLower() == "reverse"))
+            {
+                _gameHandler.SetGameModeReverse();
+            }
 
             await DisplaySetupGamePlayers();
         }
@@ -160,6 +164,7 @@ namespace PerudoBot.Modules
 
             var gameType = "Sudden Death";
             if (_gameHandler.GetMode() == GameMode.Variable) gameType = "Variable";
+            if (_gameHandler.GetMode() == GameMode.Reverse) gameType = "Reverse";
 
 
             var playerListText = string.Join("\n", listOfPlayers);
