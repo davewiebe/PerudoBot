@@ -95,6 +95,10 @@ namespace PerudoBot.GameService
         {
             _cache.Set($"gamemode{_channelId}", "variable");
         }
+        public void SetGameModeReverse()
+        {
+            _cache.Set($"gamemode{_channelId}", "reverse");
+        }
 
         public GameObject CreateGame()
         {
@@ -105,16 +109,17 @@ namespace PerudoBot.GameService
 
             game.CreateGame();
 
+            var gamemode = (string)_cache.Get($"gamemode{_channelId}");
+
+            if (gamemode == "suddendeath") game.SetModeSuddenDeath();
+            if (gamemode == "variable") game.SetModeVariable();
+            if (gamemode == "reverse") game.SetModeReverse();
+
             var playerDtos = GetSetupPlayerIds();
             foreach (var playerDto in playerDtos)
             {
                 game.AddPlayer(playerDto.PlayerId, playerDto.Name);
             }
-            
-            var gamemode = (string)_cache.Get($"gamemode{_channelId}");
-
-            if (gamemode == "suddendeath") game.SetModeSuddenDeath();
-            if (gamemode == "variable") game.SetModeVariable();
 
             ClearPlayerList();
 
@@ -169,6 +174,7 @@ namespace PerudoBot.GameService
 
             if (gamemode == "suddendeath") return GameMode.SuddenDeath;
             if (gamemode == "variable") return GameMode.Variable;
+            if (gamemode == "reverse") return GameMode.Reverse;
             return "";
         }
     }
