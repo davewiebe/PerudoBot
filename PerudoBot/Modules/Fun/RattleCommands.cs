@@ -30,7 +30,7 @@ namespace PerudoBot.Modules
         }
 
         [Command("deathrattle")]
-        public async Task DeathRattle(params string[] rattle)
+        public async Task DeathRattle([Remainder]string rattle)
         {
             var players = _db.Players
                 .Include(x => x.DiscordPlayer)
@@ -40,13 +40,13 @@ namespace PerudoBot.Modules
 
             foreach (var player in players)
             {
-                player.SetMetadata("deathrattle", string.Join(" ", rattle));
+                player.SetMetadata("deathrattle", rattle);
             }
 
             await SendMessageAsync($"Death rattle set.");
         }
         [Command("winrattle")]
-        public async Task WinRattle(params string[] rattle)
+        public async Task WinRattle([Remainder]string rattle)
         {
             var players = _db.Players
                 .Include(x => x.DiscordPlayer)
@@ -56,7 +56,7 @@ namespace PerudoBot.Modules
 
             foreach (var player in players)
             {
-                player.SetMetadata("winrattle", string.Join(" ", rattle));
+                player.SetMetadata("winrattle", rattle);
             }
 
             await SendMessageAsync($"Win rattle set.");
