@@ -20,6 +20,7 @@ namespace PerudoBot.GameService
             _channelId = channelId;
             _guildId = guildId;
         }
+        
         public bool LoadActiveGame()
         {
             _game = _db.Games
@@ -36,6 +37,21 @@ namespace PerudoBot.GameService
                 .LastOrDefault();
 
             return (_game != null);
+        }
+
+        public Round GetCurrentRound()
+        {
+            return _game.CurrentRound;
+        }
+
+        public RoundStatus GetCurrentRoundStatus()
+        {
+            return new RoundStatus
+            {
+                IsActive = _game.State == (int)GameState.InProgress,
+                Players = GetAllPlayers(),
+                RoundNumber = _game.CurrentRoundNumber
+            };
         }
 
         public void SetPlayerDice(int playerId, string dice)

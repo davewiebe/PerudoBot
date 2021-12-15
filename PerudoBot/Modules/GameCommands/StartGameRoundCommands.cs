@@ -63,7 +63,7 @@ namespace PerudoBot.Modules
 
             if (roundStatus.Players.Count < 3) await UpdateAvatar("beaten.png");
 
-            await SendNewRoundStatus(roundStatus);
+            await SendCurrentRoundStatus(roundStatus);
             await SendOutDice(roundStatus.Players);
 
             var nextPlayer = game.GetCurrentPlayer();
@@ -87,7 +87,7 @@ namespace PerudoBot.Modules
             await SendMessageAsync(updateMessage);
         }
 
-        private async Task SendNewRoundStatus(RoundStatus roundStatus)
+        public async Task SendCurrentRoundStatus(RoundStatus roundStatus)
         {
             var totalDice = roundStatus.Players.Sum(x => x.NumberOfDice);
 
