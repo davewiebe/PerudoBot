@@ -34,20 +34,6 @@ namespace PerudoBot.Modules
             var losesOrGains = liarResult.DiceLost > 0 ? "loses" : "gains"; 
             await SendMessageAsync($"There was actually `{liarResult.ActualQuantity}` dice. :fire: {liarResult.PlayerWhoLostDice.GetMention(_db)} {losesOrGains} {Math.Abs(liarResult.DiceLost)} dice. :fire:");
 
-            if (liarResult.ActualQuantity == liarResult.BidQuantity) 
-            {
-                var tauntRattle = liarResult.PlayerWhoBidLast.GetPlayerMetadata("tauntrattle");
-                if (tauntRattle != null)
-                {
-                    if (tauntRattle.ToLower().StartsWith("!gif "))
-                    {
-                        await SendTempMessageAsync(tauntRattle);
-                        Thread.Sleep(1500);
-                    }
-                    else await SendMessageAsync(tauntRattle);
-                }
-            }
-
             if (liarResult.PlayerWhoLostDice.IsEliminated)
             {
                 await SendMessageAsync($":fire::skull::fire: {liarResult.PlayerWhoLostDice.Name} defeated :fire::skull::fire:");

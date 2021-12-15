@@ -20,9 +20,8 @@ namespace PerudoBot.Modules
 
             var deathrattle = player.GetMetadata("deathrattle");
             var winrattle = player.GetMetadata("winrattle");
-            var tauntrattle = player.GetMetadata("tauntrattle");
 
-            var message = $"**Your rattles**\ndeathrattle:\n{deathrattle}\n\nwinrattle:\n{winrattle}\n\ntauntrattle:\n{tauntrattle}";
+            var message = $"**Your rattles**\ndeathrattle:\n{deathrattle}\n\nwinrattle:\n{winrattle}";
             var requestOptions = new RequestOptions() { RetryMode = RetryMode.RetryRatelimit };
             await Context.User.SendMessageAsync(message, options: requestOptions);
 
@@ -55,21 +54,6 @@ namespace PerudoBot.Modules
             }
 
             await SendMessageAsync($"Win rattle set.");
-        }
-
-        [Command("tauntrattle")]
-        public async Task TauntRattle([Remainder]string rattle)
-        {
-            var players = _db.Players
-                .AsQueryable()
-                .Where(x => x.DiscordPlayer.UserId == Context.User.Id);
-
-            foreach (var player in players)
-            {
-                player.SetMetadata("tauntrattle", rattle);
-            }
-
-            await SendMessageAsync($"Taunt rattle set.");
         }
     }
 }
