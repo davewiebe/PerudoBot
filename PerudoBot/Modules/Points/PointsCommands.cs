@@ -1,8 +1,6 @@
 ﻿using Discord.Commands;
 using PerudoBot.GameService;
-using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 namespace PerudoBot.Modules
 {
@@ -54,7 +52,7 @@ namespace PerudoBot.Modules
 
             foreach (var player in players)
             {
-                message += $"\n{player.Name}: {player.Points}";
+                message += $"\n{player.Name}: `{player.Points}`";
             }
             await SendMessageAsync(message);
         }
