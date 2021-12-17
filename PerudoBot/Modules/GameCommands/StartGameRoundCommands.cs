@@ -57,6 +57,7 @@ namespace PerudoBot.Modules
                 await UpdateAvatar("coy.png");
 
                 await CalculateEloAsync(game);
+                await AwardPoints(game);
 
                 return;
             }
