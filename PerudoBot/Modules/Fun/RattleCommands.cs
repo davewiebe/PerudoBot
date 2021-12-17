@@ -12,11 +12,9 @@ namespace PerudoBot.Modules
         [Command("rattles")]
         public async Task Rattles(params string[] rattle)
         {
-            await SendMessageAsync($"Set rattles with `!deathrattle giflink` and `!winrattle giflink` (I've PM'd you yours)");
+            await SendMessageAsync($"Set rattles with `!deathrattle giflink` and `!winrattle giflink` `!tauntrattle giflink` (I've PM'd you yours)");
 
             var player = _db.Players
-                .Include(x => x.DiscordPlayer)
-                .Include(x => x.Metadata)
                 .AsQueryable()
                 .First(x => x.DiscordPlayer.UserId == Context.User.Id);
 
@@ -34,8 +32,6 @@ namespace PerudoBot.Modules
         public async Task DeathRattle([Remainder]string rattle)
         {
             var players = _db.Players
-                .Include(x => x.DiscordPlayer)
-                .Include(x => x.Metadata)
                 .AsQueryable()
                 .Where(x => x.DiscordPlayer.UserId == Context.User.Id);
 
@@ -51,8 +47,6 @@ namespace PerudoBot.Modules
         public async Task WinRattle([Remainder]string rattle)
         {
             var players = _db.Players
-                .Include(x => x.DiscordPlayer)
-                .Include(x => x.Metadata)
                 .AsQueryable()
                 .Where(x => x.DiscordPlayer.UserId == Context.User.Id);
 
