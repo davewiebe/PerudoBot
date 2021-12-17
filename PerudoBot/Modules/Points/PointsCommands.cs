@@ -6,7 +6,6 @@ namespace PerudoBot.Modules
 {
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-
         private async Task AwardPoints(GameObject game)
         {
             var gamePlayers = game.GetAllPlayers()
@@ -17,27 +16,15 @@ namespace PerudoBot.Modules
             foreach (var gamePlayer in gamePlayers)
             {
                 var player = _db.Players.First(x => x.Id == gamePlayer.PlayerId);
-                var calculatedOrder = gamePlayers.Count() - gamePlayer.Rank;
-                var awardedPoints = GetNthFibbonacciNumber(calculatedOrder);
+                var originalPoints = player.Points;
+
+                var awardedPoints = (gamePlayers.Count() - gamePlayer.Rank + 1) * 10;
                 player.Points += awardedPoints;
 
                 _db.SaveChanges();
 
-                await SendMessageAsync($"{gamePlayer.Name} `{player.Points}` ({awardedPoints})");
+                await SendMessageAsync($"`{gamePlayer.Rank}` {gamePlayer.Name} `{originalPoints}` => `{player.Points}` ({awardedPoints})");
             }
-        }
-
-        private static int GetNthFibbonacciNumber(int n)
-        {
-            int number = n + 1; 
-            int[] Fib = new int[number + 1];
-            Fib[0] = 0;
-            Fib[1] = 1;
-            for (int i = 2; i <= number; i++)
-            {
-                Fib[i] = Fib[i - 2] + Fib[i - 1];
-            }
-            return Fib[number];
         }
 
         [Command("points")]
