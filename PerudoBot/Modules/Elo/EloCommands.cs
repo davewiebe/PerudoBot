@@ -24,6 +24,12 @@ namespace PerudoBot.Modules
                 gameMode = GameMode.SuddenDeath;
             }
 
+            var reverseList = new List<string> { "reverse", "r" };
+            if (reverseList.Contains(options.FirstOrDefault()?.ToLower()))
+            {
+                gameMode = GameMode.Reverse;
+            }
+
             var eloHandler = new EloHandler(_db, Context.Guild.Id, gameMode);
             var eloSeason = eloHandler.GetCurrentEloSeason();
 
