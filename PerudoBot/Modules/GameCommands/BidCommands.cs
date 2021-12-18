@@ -1,8 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Newtonsoft.Json;
-using Perudo.GameHandler;
 using PerudoBot.Extensions;
+using PerudoBot.GameService;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PerudoBot.Modules
@@ -85,6 +85,22 @@ namespace PerudoBot.Modules
             }
 
             await SendMessageAsync(updateMessage);
+            await CheckIfNextPlayerHasAutoLiarSetAsync(nextPlayer);
+        }
+
+        private async Task CheckIfNextPlayerHasAutoLiarSetAsync(PlayerData nextPlayer)
+        {
+            var game = _gameHandler.GetActiveGame();
+            var currentPlayerId = game.GetCurrentPlayer().PlayerId;
+
+            if (game.IsPlayerAutoLiar(currentPlayerId) == true)
+            {
+                Thread.Sleep(1000);
+                await SendMessageAsync($":hatching_chick: Auto **liar** activated.");
+                Thread.Sleep(2000);
+                await Liar();
+                game.RemoveAutoLiarFromPlayer(currentPlayerId);
+            }
         }
 
         // Unwrap bid to it's action index where 0:1x2, 1:1x3, 2:1x4, etc.

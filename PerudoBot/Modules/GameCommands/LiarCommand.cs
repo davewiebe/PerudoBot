@@ -19,9 +19,20 @@ namespace PerudoBot.Modules
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
 
-            var playerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var playerWhoLastSentMessage = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var currentPlayer = game.GetCurrentPlayer();
+            var playerWhoCalledLiar = 0;
+            
+            if(game.IsPlayerAutoLiar(currentPlayer.PlayerId) == true)
+            {
+                playerWhoCalledLiar = currentPlayer.PlayerId;
+            }
+            else
+            {
+                playerWhoCalledLiar = playerWhoLastSentMessage;
+            }
 
-            var liarResult = game.Liar(playerId);
+            var liarResult = game.Liar(playerWhoCalledLiar);
             if (liarResult == null) return;
 
             DeleteCommandFromDiscord();

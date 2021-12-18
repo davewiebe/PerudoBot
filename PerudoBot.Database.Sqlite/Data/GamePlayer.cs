@@ -23,6 +23,8 @@ namespace PerudoBot.Database.Data
         public int TurnOrder { get; set; }
         public int Rank { get; set; }
 
+        public bool IsAutoLiar { get; set; }
+
         public GamePlayerRound CurrentGamePlayerRound
         {
             get
