@@ -20,7 +20,7 @@ namespace PerudoBot.GameService
             _channelId = channelId;
             _guildId = guildId;
         }
-        
+
         public bool LoadActiveGame()
         {
             _game = _db.Games
@@ -97,7 +97,7 @@ namespace PerudoBot.GameService
         {
             return _game.Id;
         }
-        
+
         public bool AddPlayer(int playerId, string name)
         {
             if (string.IsNullOrEmpty(name)) return false;
@@ -165,7 +165,7 @@ namespace PerudoBot.GameService
         }
 
         public List<PlayerData> GetAllPlayers()
-        {            
+        {
             return _game.GamePlayers
                 .Select(x => x.ToPlayerObject())
                 .OrderBy(x => x.Name)
@@ -208,6 +208,12 @@ namespace PerudoBot.GameService
             }
 
             var activeGamePlayers = _game.GamePlayers.Where(x => x.NumberOfDice > 0);
+            foreach(var player in _game.GamePlayers)
+            {
+                player.IsAutoLiar = false;
+            }
+            _db.SaveChanges();
+
             if (activeGamePlayers.Count() == 1)
             {
                 // end the game they won!
@@ -453,7 +459,7 @@ namespace PerudoBot.GameService
             {
                 return currentDice;
             }
-            
+
             return -numberOfDiceOffBy;
         }
 
@@ -487,6 +493,32 @@ namespace PerudoBot.GameService
                 .Where(x => x.Dice != "")
                 .SelectMany(x => x.Dice.Split(",").Select(x => int.Parse(x)))
                 .ToList();
+        }
+
+        public bool? IsPlayerAutoLiar(int playerId)
+        {
+            var gamePlayer = _game.GamePlayers.SingleOrDefault(x => x.PlayerId == playerId);
+            return gamePlayer.IsAutoLiar;
+        }
+       
+        public PlayerData GetPlayer(int playerId)
+        {
+            var gamePlayer = _game.GamePlayers.SingleOrDefault(x => x.PlayerId == playerId);
+            return gamePlayer.ToPlayerObject();
+        }
+
+        public void ApplyAutoLiarToPlayer(int playerId)
+        {
+            var gamePlayer = _game.GamePlayers.SingleOrDefault(x => x.PlayerId == playerId);
+            gamePlayer.IsAutoLiar = true;
+            _db.SaveChanges();
+        }
+
+        public void RemoveAutoLiarFromPlayer(int playerId)
+        {
+            var gamePlayer = _game.GamePlayers.SingleOrDefault(x => x.PlayerId == playerId);
+            gamePlayer.IsAutoLiar = false;
+            _db.SaveChanges();
         }
 
         public PlayerData GetCurrentPlayer()
