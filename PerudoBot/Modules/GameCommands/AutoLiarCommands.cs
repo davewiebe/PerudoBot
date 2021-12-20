@@ -7,12 +7,18 @@ namespace PerudoBot.Modules
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
         [Command("autoliar")]
+        [Alias("auto")]
         public async Task AutoLiar(params string[] bidText)
         {
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
             var playerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
             var player = game.GetPlayer(playerId);
+
+            if (player.IsEliminated)
+            {
+                return;
+            }
 
             if (player == null)
                 return;

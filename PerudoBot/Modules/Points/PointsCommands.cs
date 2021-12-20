@@ -12,6 +12,13 @@ namespace PerudoBot.Modules
                 .OrderBy(x => x.Rank)
                 .ToList();
 
+            if(gamePlayers.Count == 1)
+            {
+                var gamePlayer = gamePlayers.First();
+                await SendMessageAsync($"{gamePlayer.Name} has been awarded no points for participating in an incomplete game.");
+                return;
+            }
+
             await SendMessageAsync("`Points:`");
             foreach (var gamePlayer in gamePlayers)
             {
