@@ -28,7 +28,7 @@ namespace PerudoBot.Modules
 
             var swapWithPlayerId = GetPlayerId(swapWith.Id, Context.Guild.Id);
 
-            if (!game.HasPlayerWithDice(swapWithPlayerId)) ;
+            if (!game.HasPlayerWithDice(swapWithPlayerId)) return;
 
             // TODO: Refactor this to use points?
             if (AbleToUsePowerUp(game, currentPlayer.PlayerId))
