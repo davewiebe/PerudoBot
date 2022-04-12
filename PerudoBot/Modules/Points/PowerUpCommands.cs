@@ -12,7 +12,7 @@ namespace PerudoBot.Modules
 
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-        [Command("use swap")]
+        [Command("swap")]
         public async Task Swap(SocketUser swapWith)
         {
             if (swapWith == null) return;
