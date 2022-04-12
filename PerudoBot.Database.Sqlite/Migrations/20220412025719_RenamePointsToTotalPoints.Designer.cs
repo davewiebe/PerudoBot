@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerudoBot.Database.Data;
 
 namespace PerudoBot.Database.Sqlite.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    partial class PerudoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220412025719_RenamePointsToTotalPoints")]
+    partial class RenamePointsToTotalPoints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,9 +232,6 @@ namespace PerudoBot.Database.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TotalPoints")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UsedPoints")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

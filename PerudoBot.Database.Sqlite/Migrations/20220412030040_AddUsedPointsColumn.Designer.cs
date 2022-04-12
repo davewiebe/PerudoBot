@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerudoBot.Database.Data;
 
 namespace PerudoBot.Database.Sqlite.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    partial class PerudoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220412030040_AddUsedPointsColumn")]
+    partial class AddUsedPointsColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

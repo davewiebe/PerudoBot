@@ -172,6 +172,12 @@ namespace PerudoBot.GameService
                 .ToList();
         }
 
+        public bool HasPlayerWithDice(int playerId)
+        {
+            return _game.GamePlayers
+                .Any(x => x.PlayerId == playerId && x.NumberOfDice > 0);
+        }
+
         public string GetMode()
         {
             if (_game.Mode == GameMode.SuddenDeath) return "Sudden Death";
@@ -563,6 +569,18 @@ namespace PerudoBot.GameService
         public bool HasBots()
         {
             return _game.GamePlayers.Any(p => p.Player.DiscordPlayer.IsBot && p.NumberOfDice > 0);
+        }
+
+        public void SwapPlayerHands(int playerOne, int playerTwo)
+        {
+            var gamePlayerOne = _game.GamePlayers.Single(x => x.PlayerId == playerOne);
+            var gamePlayerTwo = _game.GamePlayers.Single(x => x.PlayerId == playerTwo);
+
+            var playerOneDice = gamePlayerOne.CurrentGamePlayerRound.Dice;
+            gamePlayerOne.CurrentGamePlayerRound.Dice = gamePlayerTwo.CurrentGamePlayerRound.Dice;
+            gamePlayerTwo.CurrentGamePlayerRound.Dice = playerOneDice;
+
+            _db.SaveChanges();
         }
 
         public Bid GetPreviousBid()
