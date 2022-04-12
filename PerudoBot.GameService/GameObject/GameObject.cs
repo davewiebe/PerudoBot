@@ -583,6 +583,32 @@ namespace PerudoBot.GameService
             _db.SaveChanges();
         }
 
+        public void GrantDice(int playerId, int numDice)
+        {
+            var random = new Random();
+            var gamePlayer = _game.GamePlayers.Single(x => x.PlayerId == playerId);
+
+            var playerDice = gamePlayer.CurrentGamePlayerRound.Dice.Split(",").Select(x => int.Parse(x)).ToList();
+
+            for (int i = 0; i < Math.Abs(numDice); i++)
+            {
+                if (numDice > 0)
+                {
+                    int randomNumber = random.Next(1, 7);
+                    playerDice.Add(randomNumber);
+                }
+                else
+                {
+                    int randomNumber = random.Next(0, playerDice.Count);
+                    playerDice.RemoveAt(randomNumber);
+                }
+            }
+
+            playerDice.Sort();
+            gamePlayer.CurrentGamePlayerRound.Dice = string.Join(",", playerDice);
+            _db.SaveChanges();
+        }
+
         public Bid GetPreviousBid()
         {
             return _game.CurrentRound

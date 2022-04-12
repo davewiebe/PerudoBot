@@ -12,6 +12,9 @@ namespace PerudoBot.Modules
 
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
+        private const int MAX_USES = 6;
+        private Random RAND = new Random();
+
         [Command("swap")]
         public async Task Swap(SocketUser swapWith)
         {
@@ -21,10 +24,21 @@ namespace PerudoBot.Modules
             var game = _gameHandler.GetActiveGame();
 
             if (game == null) return;
+
+            if (game.GetAllPlayers().Count < 4)
+            {
+                await SendMessageAsync($"You can only use swap with four or more players remaining");
+                return;
+            }
+
             var currentPlayer = game.GetCurrentPlayer();
             var userId = GetUserId(currentPlayer);
 
-            if (Context.User.Id != userId) return;
+            if (Context.User.Id != userId)
+            {
+                await SendMessageAsync($"You can only use swap on your own turn");
+                return;
+            }
 
             var swapWithPlayerId = GetPlayerId(swapWith.Id, Context.Guild.Id);
 
@@ -34,7 +48,8 @@ namespace PerudoBot.Modules
             if (AbleToUsePowerUp(game, currentPlayer.PlayerId))
             {
                 var numUsed = GetPowerUpsUsed(game, currentPlayer.PlayerId);
-                SetPowerUpsUsed(game, currentPlayer.PlayerId, numUsed + 1);
+                SetPowerUpsUsed(game, currentPlayer.PlayerId, ++numUsed);
+                await SendMessageAsync($"{currentPlayer.Name} has {MAX_USES - numUsed}/{MAX_USES} :zap: Power Up uses left");
             }
             else
             {
@@ -51,6 +66,64 @@ namespace PerudoBot.Modules
             await SendOutDice(playersToUpates);
 
             await SendMessageAsync($":zap: Swapped hands of players {currentPlayer.Name} and {swapWithPlayer.Name} :zap:");
+        }
+
+        [Command("gamble")]
+        public async Task Gamble()
+        {
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
+
+            if (game == null) return;
+
+            if (game.GetAllPlayers().Count < 3)
+            {
+                await SendMessageAsync($"You can only use swap with three or more players remaining");
+                return;
+            }
+
+            var currentPlayer = game.GetCurrentPlayer();
+            var userId = GetUserId(currentPlayer);
+
+            if (Context.User.Id != userId)
+            {
+                await SendMessageAsync($"You can only use gamble on your own turn");
+                return;
+            }
+
+            // TODO: Refactor this to use points?
+            if (AbleToUsePowerUp(game, currentPlayer.PlayerId))
+            {
+                var numUsed = GetPowerUpsUsed(game, currentPlayer.PlayerId);
+                SetPowerUpsUsed(game, currentPlayer.PlayerId, ++numUsed);
+                await SendMessageAsync($"{currentPlayer.Name} has {MAX_USES - numUsed}/{MAX_USES} :zap: Power Up uses left");
+            }
+            else
+            {
+                await SendMessageAsync($"Power Up limit reached for {currentPlayer.Name}");
+                return;
+            }
+
+            var minToGet = (-currentPlayer.Dice.Count) + 1;
+            var maxToGet = currentPlayer.Dice.Count + 2;
+            maxToGet = Math.Min(maxToGet, 4);
+
+            var diceToGet = RAND.Next(minToGet, maxToGet);
+            game.GrantDice(currentPlayer.PlayerId, diceToGet);
+
+            if (diceToGet == 0)
+            {
+                await SendMessageAsync($":zap: {currentPlayer.Name} used gamble but nothing happened :zap:");
+            }
+            else
+            {
+                var gainsLoses = diceToGet > 0 ? "gains" : "loses";
+                await SendMessageAsync($":zap: {currentPlayer.Name} {gainsLoses} {Math.Abs(diceToGet)} dice :zap:");
+
+                currentPlayer = game.GetCurrentPlayer();
+                var playersToUpates = new List<PlayerData> { currentPlayer };
+                await SendOutDice(playersToUpates);
+            }
         }
 
         private bool AbleToUsePowerUp(GameObject game, int playerId)
