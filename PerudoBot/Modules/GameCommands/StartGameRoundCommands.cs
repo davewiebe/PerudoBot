@@ -90,11 +90,11 @@ namespace PerudoBot.Modules
 
         public async Task SendCurrentRoundStatus(RoundStatus roundStatus)
         {
-            var totalDice = roundStatus.Players.Sum(x => x.NumberOfDice);
+            var totalDice = roundStatus.Players.Sum(x => x.Dice.Count);
 
             var players = roundStatus.ActivePlayers
                             .OrderBy(x => x.TurnOrder)
-                            .Select(x => $"`{x.NumberOfDice}` {x.Name}");
+                            .Select(x => $"`{x.Dice.Count}` {x.Name}");
 
             var playerList = string.Join("\n", players);
 

@@ -19,19 +19,40 @@ namespace PerudoBot.Modules
                 return;
             }
 
-            await SendMessageAsync("`Points:`");
+            var message = "`Points:`";
             foreach (var gamePlayer in gamePlayers)
             {
                 var player = _db.Players.First(x => x.Id == gamePlayer.PlayerId);
-                var originalPoints = player.TotalPoints;
+                var originalPoints = player.AvailablePoints;
 
                 var awardedPoints = (gamePlayers.Count() - gamePlayer.Rank + 1) * 10;
                 player.TotalPoints += awardedPoints;
 
-                _db.SaveChanges();
+                _db.SaveChanges(); ;
 
-                await SendMessageAsync($"`{gamePlayer.Rank}` {gamePlayer.Name} `{originalPoints}` => `{player.TotalPoints}` ({awardedPoints})");
+                message += $"\n`{gamePlayer.Rank}` {gamePlayer.Name} `{originalPoints}` => `{player.AvailablePoints}` ({awardedPoints})";
             }
+
+            await SendMessageAsync(message);
+        }
+
+        public int GetAvailablePoints(int playerId)
+        {
+            return _db.Players.First(x => x.Id == playerId).AvailablePoints;
+        }
+
+        public void AddTotalPoints(int playerId, int points)
+        {
+            var player = _db.Players.First(x => x.Id == playerId);
+            player.TotalPoints += points;
+            _db.SaveChanges();
+        }
+
+        public void AddUsedPoints(int playerId, int points)
+        {
+            var player = _db.Players.First(x => x.Id == playerId);
+            player.UsedPoints += points;
+            _db.SaveChanges();
         }
 
         [Command("points")]
@@ -46,7 +67,7 @@ namespace PerudoBot.Modules
 
             foreach (var player in players)
             {
-                message += $"\n{player.Name}: `{player.TotalPoints}`";
+                message += $"\n{player.Name}: `{player.AvailablePoints}` `({player.TotalPoints})`";
             }
             await SendMessageAsync(message);
         }

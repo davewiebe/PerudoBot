@@ -16,7 +16,7 @@ namespace PerudoBot.Modules
         [Command("elo")]
         public async Task Elo(params string[] options)
         {
-            var gameMode = GameMode.Variable;
+            var gameMode = GameMode.Reverse;
 
             var suddendeathList = new List<string> { "suddendeath", "sd", "sudden", "death" };
             if (suddendeathList.Contains(options.FirstOrDefault()?.ToLower()))
@@ -24,10 +24,10 @@ namespace PerudoBot.Modules
                 gameMode = GameMode.SuddenDeath;
             }
 
-            var reverseList = new List<string> { "reverse", "r" };
+            var reverseList = new List<string> { "variable", "v" };
             if (reverseList.Contains(options.FirstOrDefault()?.ToLower()))
             {
-                gameMode = GameMode.Reverse;
+                gameMode = GameMode.Variable;
             }
 
             var eloHandler = new EloHandler(_db, Context.Guild.Id, gameMode);
@@ -66,7 +66,7 @@ namespace PerudoBot.Modules
             {
                 var eloResult = eloResults.Single(x => x.PlayerId == gamePlayer.PlayerId);
                 await SendMessageAsync($"`{gamePlayer.Rank}` {gamePlayer.Name} `{eloResult.PreviousElo}` => `{eloResult.Elo}` ({eloResult.Elo - eloResult.PreviousElo})");
-                Thread.Sleep(1500); // For suspense! 
+                Thread.Sleep(500); // For suspense! 
             }
         }
     }

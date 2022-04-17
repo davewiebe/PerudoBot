@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using PerudoBot.Extensions;
 using PerudoBot.GameService;
@@ -15,7 +16,6 @@ namespace PerudoBot.Modules
 
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-        private const int MAX_ENERGY = 20;
         private Random _random = new Random();
 
         [Command("reforge")]
@@ -111,7 +111,7 @@ namespace PerudoBot.Modules
         public async Task Steal(SocketUser stealFrom)
         {
             if (stealFrom == null) return;
-            
+
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
             if (game == null) return;
@@ -128,7 +128,7 @@ namespace PerudoBot.Modules
             }
 
             var previousBid = game.GetPreviousBid();
-            
+
             if (previousBid?.GamePlayer.PlayerId == stealFromPlayerId)
             {
                 await SendMessageAsync($"You can't steal from a player that just bid");
@@ -167,12 +167,12 @@ namespace PerudoBot.Modules
 
             var chanceRoll = _random.Next(0, 100);
 
-            if (chanceRoll < 5) 
+            if (chanceRoll < 5)
             {
                 game.AddDice(powerUpPlayerId, new List<int> { 1, 1 });
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
             }
-            else if (chanceRoll < 10) 
+            else if (chanceRoll < 10)
             {
                 game.AddRandomDice(powerUpPlayerId, 2, isMystery: true);
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
@@ -193,14 +193,14 @@ namespace PerudoBot.Modules
                 game.AddDice(powerUpPlayerId, new List<int> { 1 });
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
             }
-            else if (chanceRoll < 80) 
+            else if (chanceRoll < 80)
             {
                 game.RemoveRandomDice(powerUpPlayerId, 1);
                 game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
                 game.AddDice(powerUpPlayerId, new List<int> { 1 });
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} traded one of his dice for two special dice");
             }
-            else 
+            else
             {
                 game.RemoveRandomDice(powerUpPlayerId, 1);
                 game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
@@ -211,6 +211,32 @@ namespace PerudoBot.Modules
 
             var playersToUpates = new List<PlayerData> { powerUpPlayer };
             await SendOutDice(playersToUpates, isUpdate: true);
+        }
+
+        [Command("claim")]
+        public async Task Claim()
+        {
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
+            if (game == null) return;
+
+            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+
+            var claimTreshold = 200;
+            if (GetAvailablePoints(powerUpPlayerId) > claimTreshold)
+            {
+                await SendMessageAsync($"You must have less than {claimTreshold} available points to use claim.");
+                return;
+            }
+
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Gamble)) return;
+
+            var pointsGained = 25;
+            AddTotalPoints(powerUpPlayerId, pointsGained);
+
+            var updatedPoints = GetAvailablePoints(powerUpPlayerId);
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} claims `{pointsGained}` points. {powerUpPlayer.Name} has `{updatedPoints}` points.");
         }
 
         [Command("lifetap")]
@@ -230,23 +256,38 @@ namespace PerudoBot.Modules
 
             if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Lifetap)) return;
 
-            var energyGained = _random.Next(8, 13);
+            var pointsGained = 50;
 
             if (game.GetMode() == GameMode.Reverse)
             {
                 game.SetPlayerDice(powerUpPlayerId, playerDiceCount + 1);
-                AddEnergy(game, powerUpPlayerId, energyGained);
+                AddTotalPoints(powerUpPlayerId, pointsGained);
             }
             else
             {
                 game.SetPlayerDice(powerUpPlayerId, playerDiceCount - 1);
-                AddEnergy(game, powerUpPlayerId, energyGained);
+                AddTotalPoints(powerUpPlayerId, pointsGained);
             }
 
-            var updatedEnergy = GetEnergy(game, powerUpPlayerId);
+            var updatedPoints = GetAvailablePoints(powerUpPlayerId);
 
-            await SendMessageAsync($":zap: {powerUpPlayer.Name} loses a life to get `{energyGained}` energy back. " +
-                $"{powerUpPlayer.Name} has `{updatedEnergy}/{MAX_ENERGY}` energy left.");
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} loses a life to get `{pointsGained}` points. " +
+                $"{powerUpPlayer.Name} has `{updatedPoints}` points.");
+        }
+
+        [Command("powerups")]
+        public async Task PowerUpInfo()
+        {
+            var builder = new EmbedBuilder().WithTitle($"Power Up Information");
+
+            foreach (var powerUp in PowerUps.PowerUpList)
+            {
+                builder.AddField($":zap: {powerUp.Name} - `{powerUp.Cost}` pts", $"{powerUp.Description}");
+            }
+
+            var embed = builder.Build();
+
+            await Context.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
         }
 
         private async Task<bool> AbleToUsePowerUp(GameObject game, PlayerData player, PowerUp powerUp)
@@ -272,52 +313,30 @@ namespace PerudoBot.Modules
                 return false;
             }
 
-            if (GetEnergy(game, player.PlayerId) < powerUp.EnergyCost)
+            if (GetAvailablePoints(player.PlayerId) < powerUp.Cost)
             {
-                await SendMessageAsync($"You don't have enough energy to use :zap: {powerUp.Name}");
+                await SendMessageAsync($"You don't have enough points to use :zap: {powerUp.Name}");
                 return false;
             }
 
             if (GetPowerUpUses(game, player.PlayerId, powerUp) >= powerUp.UsesPerGame)
             {
-                await SendMessageAsync($"You have reached use limit for :zap: {powerUp.Name}");
+                await SendMessageAsync($"You have reached use limit for :zap: {powerUp.Name}.");
                 return false;
             }
 
-            AddEnergy(game, player.PlayerId, -powerUp.EnergyCost);
+            if (powerUp.Cost > 0)
+            {
+                AddUsedPoints(player.PlayerId, powerUp.Cost);
+                await SendMessageAsync($":grey_exclamation: {player.Name} spent `{powerUp.Cost}` points to use `{powerUp.Name}`.");
+            }
+
             AddPowerUpUses(game, player.PlayerId, powerUp, 1);
-
-            if (powerUp.EnergyCost > 0)
-            {
-                var updatedEnergy = GetEnergy(game, player.PlayerId);
-                await SendMessageAsync($":grey_exclamation: {player.Name} spends `{powerUp.EnergyCost}` energy to use `{powerUp.Name}`. {player.Name} has `{updatedEnergy}/{MAX_ENERGY}` energy left.");
-            }
-
             DeleteCommandFromDiscord();
+
             Thread.Sleep(1500);
+
             return true;
-        }
-        
-        private int GetEnergy(GameObject game, int playerId)
-        {
-            var metaDataKey = $"{playerId}-energy";
-            var numUsedString = game.GetMetadata(metaDataKey);
-
-            if (string.IsNullOrEmpty(numUsedString))
-            {
-                game.SetMetadata(metaDataKey, MAX_ENERGY.ToString());
-                return MAX_ENERGY;
-            }
-
-            return int.Parse(numUsedString);
-        }
-
-        private void AddEnergy(GameObject game, int playerId, int value)
-        {
-            var currentEnergy = GetEnergy(game, playerId);
-            var metaDataKey = $"{playerId}-energy";
-            var newEnergy = Math.Min(currentEnergy + value, MAX_ENERGY);
-            game.SetMetadata(metaDataKey, newEnergy.ToString());
         }
 
         private int GetPowerUpUses(GameObject game, int playerId, PowerUp powerUp)

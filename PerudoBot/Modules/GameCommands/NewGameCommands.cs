@@ -27,7 +27,7 @@ namespace PerudoBot.Modules
             }
 
             if (DateTime.Now.Hour < 12) _gameHandler.SetGameModeSuddenDeath();
-            else _gameHandler.SetGameModeVariable();
+            else _gameHandler.SetGameModeReverse();
 
             _gameHandler.ClearPlayerList();
 
