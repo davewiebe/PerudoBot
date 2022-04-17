@@ -1,9 +1,12 @@
 ﻿using PerudoBot.Database.Data;
+using PerudoBot.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+
 
 namespace PerudoBot.GameService.Extensions
 {
@@ -11,16 +14,6 @@ namespace PerudoBot.GameService.Extensions
     {
         public static PlayerData ToPlayerObject(this GamePlayer gamePlayer)
         {
-            var dice = new List<int>();
-            if (!string.IsNullOrEmpty(gamePlayer.CurrentGamePlayerRound?.Dice))
-            {
-                dice = gamePlayer.
-                    CurrentGamePlayerRound
-                    .Dice
-                    .Split(",")
-                    .Select(x => int.Parse(x))
-                    .ToList();
-            }
             return new PlayerData
             {
                 NumberOfDice = gamePlayer.NumberOfDice,
@@ -28,7 +21,8 @@ namespace PerudoBot.GameService.Extensions
                 PlayerId = gamePlayer.Player.Id,
                 Rank = gamePlayer.Rank,
                 TurnOrder = gamePlayer.TurnOrder,
-                Dice = dice,
+                Dice = gamePlayer.CurrentGamePlayerRound?.Dice.ToIntegerDice(),
+                HiddenDiceIndeces = gamePlayer.CurrentGamePlayerRound?.Dice.GetHiddenDiceIndeces(),
                 PlayerMetadata = gamePlayer.Player.Metadata.ToDictionary(x => x.Key, x => x.Value),
                 GamePlayerMetadata = gamePlayer.Metadata.ToDictionary(x => x.Key, x => x.Value)
             };

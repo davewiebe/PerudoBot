@@ -120,7 +120,7 @@ namespace PerudoBot.Modules
             await SendMessageAsync($"{mention} ||`deal {encoded}`||");
         }
 
-        private async Task SendOutDice(List<PlayerData> playerDice)
+        private async Task SendOutDice(List<PlayerData> playerDice, bool isUpdate = false)
         {
             var playerIds = playerDice.Select(x => x.PlayerId).ToList();
 
@@ -132,7 +132,7 @@ namespace PerudoBot.Modules
             {
                 // send dice to each player
                 if (player.NumberOfDice == 0) continue;
-                var diceEmojis = player.Dice.Select(x => x.ToEmoji());
+                var diceEmojis = player.GetDiceEmojis();
 
                 var userId = players.Single(x => x.Id == player.PlayerId).DiscordPlayer.UserId;
                 var user = Context.Guild.Users.Single(x => x.Id == userId);
@@ -143,7 +143,8 @@ namespace PerudoBot.Modules
                 }
                 else
                 {
-                    var message = $"Your dice: {string.Join(" ", diceEmojis)}";
+                    var prefix = isUpdate ? "         :" : "Your dice:";
+                    var message = $"`{prefix}` {string.Join(" ", diceEmojis)}";
                     var requestOptions = new RequestOptions() { RetryMode = RetryMode.RetryRatelimit };
                     await user.SendMessageAsync(message, options: requestOptions);
                 }

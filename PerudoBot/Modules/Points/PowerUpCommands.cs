@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PerudoBot.Modules
@@ -14,14 +15,12 @@ namespace PerudoBot.Modules
 
     public partial class Commands : ModuleBase<SocketCommandContext>
     {
-        private const int MAX_USES = 6;
-        private Random RAND = new Random();
+        private const int MAX_ENERGY = 20;
+        private Random _random = new Random();
 
-        [Command("swap")]
-        public async Task Swap(SocketUser swapWith)
+        [Command("reforge")]
+        public async Task Reforge()
         {
-            if (swapWith == null) return;
-
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
             if (game == null) return;
@@ -29,26 +28,129 @@ namespace PerudoBot.Modules
             var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
             var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
 
-            if (await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Swap)) DeleteCommandFromDiscord();
-            else return;
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Minify)) return;
 
-            var swapWithPlayerId = GetPlayerId(swapWith.Id, Context.Guild.Id);
+            var removedDice = game.RemoveRandomDice(powerUpPlayerId, powerUpPlayer.Dice.Count);
+            var otherPlayers = game.GetAllPlayers()
+                .Where(x => x.NumberOfDice > 0)
+                .Where(x => x.PlayerId != powerUpPlayerId)
+                .ToList();
 
-            if (!game.HasPlayerWithDice(swapWithPlayerId))
+            for (int i = 0; i < otherPlayers.Count; i++)
             {
-                await SendMessageAsync($"Swap target must be a player with dice");
+                var playerToGiveDiceTo = otherPlayers[i];
+                game.AddDice(playerToGiveDiceTo.PlayerId, new List<int> { removedDice[i % removedDice.Count] }, isMystery: true);
+            }
+            game.AddRandomDice(powerUpPlayerId, removedDice.Count);
+
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} reforged their hand");
+
+            var playersToUpdate = game.GetAllPlayers()
+                .Where(x => x.NumberOfDice > 0)
+                .ToList();
+
+            await SendOutDice(playersToUpdate, isUpdate: true);
+        }
+
+        [Command("minify")]
+        public async Task Minify()
+        {
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
+            if (game == null) return;
+
+            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Minify)) return;
+
+            var numToReroll = (int)Math.Ceiling(powerUpPlayer.Dice.Count / 2.0);
+            var numRevealed = numToReroll / 2;
+
+            game.RemoveDiceFromEnd(powerUpPlayerId, numToReroll);
+
+            game.AddRandomDice(powerUpPlayerId, numRevealed);
+            game.AddRandomDice(powerUpPlayerId, numToReroll - numRevealed, isMystery: true);
+
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} minified {numToReroll} of their dice");
+
+            powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+            var playersToUpates = new List<PlayerData> { powerUpPlayer };
+            await SendOutDice(playersToUpates, isUpdate: true);
+        }
+
+
+        [Command("magnify")]
+        public async Task Magnify()
+        {
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
+            if (game == null) return;
+
+            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Magnify)) return;
+
+            var numToReroll = (int)Math.Ceiling(powerUpPlayer.Dice.Count / 2.0);
+            var numRevealed = numToReroll / 2;
+
+            game.RemoveDiceFromStart(powerUpPlayerId, numToReroll);
+
+            game.AddRandomDice(powerUpPlayerId, numRevealed);
+            game.AddRandomDice(powerUpPlayerId, numToReroll - numRevealed, isMystery: true);
+
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} magnified {numToReroll} of their dice");
+
+            powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+            var playersToUpates = new List<PlayerData> { powerUpPlayer };
+            await SendOutDice(playersToUpates, isUpdate: true);
+        }
+
+        [Command("steal")]
+        public async Task Steal(SocketUser stealFrom)
+        {
+            if (stealFrom == null) return;
+            
+            SetGuildAndChannel();
+            var game = _gameHandler.GetActiveGame();
+            if (game == null) return;
+
+            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
+
+            var stealFromPlayerId = GetPlayerId(stealFrom.Id, Context.Guild.Id);
+
+            if (!game.HasPlayerWithDice(stealFromPlayerId) || stealFrom.IsBot)
+            {
+                await SendMessageAsync($"Steal target must be a human player with dice");
                 return;
             }
 
-            game.SwapPlayerHands(powerUpPlayer.PlayerId, swapWithPlayerId);
+            var previousBid = game.GetPreviousBid();
+            
+            if (previousBid?.GamePlayer.PlayerId == stealFromPlayerId)
+            {
+                await SendMessageAsync($"You can't steal from a player that just bid");
+                return;
+            }
 
-            var swapWithPlayer = game.GetPlayer(swapWithPlayerId);
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Steal)) return;
+
+            var stealFromPlayer = game.GetPlayer(stealFromPlayerId);
+            var numberToSteal = _random.Next(2, 4);
+            numberToSteal = Math.Min(numberToSteal, stealFromPlayer.Dice.Count - 1);
+
+            var stolenDice = game.RemoveRandomDice(stealFromPlayerId, numberToSteal);
+            game.AddDice(powerUpPlayerId, stolenDice, isMystery: true);
+
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} stole {numberToSteal} mystery dice from {stealFromPlayer.Name}");
+
+            stealFromPlayer = game.GetPlayer(stealFromPlayerId);
             powerUpPlayer = game.GetPlayer(powerUpPlayer.PlayerId);
 
-            var playersToUpates = new List<PlayerData> { powerUpPlayer, swapWithPlayer };
-            await SendOutDice(playersToUpates);
-
-            await SendMessageAsync($":zap: Swapped hands of players {powerUpPlayer.Name} and {swapWithPlayer.Name} :zap:");
+            var playersToUpates = new List<PlayerData> { powerUpPlayer, stealFromPlayer };
+            await SendOutDice(playersToUpates, isUpdate: true);
         }
 
         [Command("gamble")]
@@ -61,63 +163,58 @@ namespace PerudoBot.Modules
             var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
             var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
 
-            if (await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Gamble)) DeleteCommandFromDiscord();
-            else return;
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Gamble)) return;
 
-            var minToGet = (-powerUpPlayer.Dice.Count) + 1;
-            var maxToGet = powerUpPlayer.Dice.Count + 2;
-            maxToGet = Math.Min(maxToGet, 4);
+            var chanceRoll = _random.Next(0, 100);
 
-            var diceToGet = RAND.Next(minToGet, maxToGet);
-            game.GrantDice(powerUpPlayer.PlayerId, diceToGet);
-
-            if (diceToGet == 0)
+            if (chanceRoll < 5) 
             {
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} used gamble but nothing happened :zap:");
+                game.AddDice(powerUpPlayerId, new List<int> { 1, 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
             }
-            else
+            else if (chanceRoll < 10) 
             {
-                var gainsLoses = diceToGet > 0 ? "gains" : "loses";
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} {gainsLoses} {Math.Abs(diceToGet)} dice :zap:");
-
-                powerUpPlayer = game.GetPlayer(powerUpPlayer.PlayerId);
-                var playersToUpates = new List<PlayerData> { powerUpPlayer };
-                await SendOutDice(playersToUpates);
+                game.AddRandomDice(powerUpPlayerId, 2, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
             }
+            else if (chanceRoll < 20)
+            {
+                game.AddDice(powerUpPlayerId, new List<int> { 1 });
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
+            }
+            else if (chanceRoll < 40)
+            {
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
+            }
+            else if (chanceRoll < 60)
+            {
+                game.AddDice(powerUpPlayerId, new List<int> { 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
+            }
+            else if (chanceRoll < 80) 
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 1);
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                game.AddDice(powerUpPlayerId, new List<int> { 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded one of his dice for two special dice");
+            }
+            else 
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 1);
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded one of his dice for a special die");
+            }
+
+            powerUpPlayer = game.GetPlayer(powerUpPlayer.PlayerId);
+
+            var playersToUpates = new List<PlayerData> { powerUpPlayer };
+            await SendOutDice(playersToUpates, isUpdate: true);
         }
 
-        [Command("claim")]
-        public async Task Claim(params string[] bidText)
-        {
-            if (bidText == null || bidText.Length < 2) return;
-
-            SetGuildAndChannel();
-            var game = _gameHandler.GetActiveGame();
-            if (game == null) return;
-
-            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
-            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
-
-            if (await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Claim)) DeleteCommandFromDiscord();
-            else return;
-
-            if (!int.TryParse(bidText[0], out int claimedCount)) return;
-            if (!int.TryParse(bidText[1], out int face)) return;
-
-            var actualCount = powerUpPlayer.Dice.Count(x => x == face);
-
-            if (actualCount != claimedCount)
-            {
-                await SendMessageAsync($":no_entry: Unable to verify {powerUpPlayer.Name}'s claim of `{claimedCount}` ˣ {face.ToEmoji()}");
-            }
-            else
-            {
-                await SendMessageAsync($":white_check_mark: Verified {powerUpPlayer.Name}'s claim of `{claimedCount}` ˣ {face.ToEmoji()}");
-            }
-        }
-
-        [Command("uses")]
-        public async Task Uses()
+        [Command("lifetap")]
+        public async Task Lifetap()
         {
             SetGuildAndChannel();
             var game = _gameHandler.GetActiveGame();
@@ -126,8 +223,30 @@ namespace PerudoBot.Modules
             var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
             var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
 
-            var numUsed = GetPowerUpsUsed(game, powerUpPlayer.PlayerId);
-            await SendMessageAsync($"{powerUpPlayer.Name} has {MAX_USES - numUsed}/{MAX_USES} :zap: Power Up uses left");
+            var playerDiceCount = powerUpPlayer.NumberOfDice;
+
+            if (playerDiceCount >= 5 && game.GetMode() == GameMode.Reverse) return;
+            if (playerDiceCount <= 1 && game.GetMode() != GameMode.Reverse) return;
+
+            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Lifetap)) return;
+
+            var energyGained = _random.Next(8, 13);
+
+            if (game.GetMode() == GameMode.Reverse)
+            {
+                game.SetPlayerDice(powerUpPlayerId, playerDiceCount + 1);
+                AddEnergy(game, powerUpPlayerId, energyGained);
+            }
+            else
+            {
+                game.SetPlayerDice(powerUpPlayerId, playerDiceCount - 1);
+                AddEnergy(game, powerUpPlayerId, energyGained);
+            }
+
+            var updatedEnergy = GetEnergy(game, powerUpPlayerId);
+
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} loses a life to get `{energyGained}` energy back. " +
+                $"{powerUpPlayer.Name} has `{updatedEnergy}/{MAX_ENERGY}` energy left.");
         }
 
         private async Task<bool> AbleToUsePowerUp(GameObject game, PlayerData player, PowerUp powerUp)
@@ -143,29 +262,67 @@ namespace PerudoBot.Modules
             var userId = GetUserId(player);
             if (!powerUp.OutOfTurn && Context.User.Id != userId)
             {
-                await SendMessageAsync($"You can only use gamble on your own turn");
+                await SendMessageAsync($"You can only use :zap: {powerUp.Name} on your own turn");
                 return false;
             }
 
-            if (GetPowerUpsUsed(game, player.PlayerId) < MAX_USES)
+            if (player.Dice.Count < powerUp.MinDice)
             {
-                var numUsed = GetPowerUpsUsed(game, player.PlayerId);
-                SetPowerUpsUsed(game, player.PlayerId, ++numUsed);
-                
-                //await SendMessageAsync($"{player.Name} has {MAX_USES - numUsed}/{MAX_USES} :zap: Power Up uses left");
-            }
-            else
-            {
-                await SendMessageAsync($"Power Up use limit reached for {player.Name}. Keep track of uses with `!uses`.");
+                await SendMessageAsync($"You can only use :zap: {powerUp.Name} with {powerUp.MinDice} or more dice");
                 return false;
             }
 
+            if (GetEnergy(game, player.PlayerId) < powerUp.EnergyCost)
+            {
+                await SendMessageAsync($"You don't have enough energy to use :zap: {powerUp.Name}");
+                return false;
+            }
+
+            if (GetPowerUpUses(game, player.PlayerId, powerUp) >= powerUp.UsesPerGame)
+            {
+                await SendMessageAsync($"You have reached use limit for :zap: {powerUp.Name}");
+                return false;
+            }
+
+            AddEnergy(game, player.PlayerId, -powerUp.EnergyCost);
+            AddPowerUpUses(game, player.PlayerId, powerUp, 1);
+
+            if (powerUp.EnergyCost > 0)
+            {
+                var updatedEnergy = GetEnergy(game, player.PlayerId);
+                await SendMessageAsync($":grey_exclamation: {player.Name} spends `{powerUp.EnergyCost}` energy to use `{powerUp.Name}`. {player.Name} has `{updatedEnergy}/{MAX_ENERGY}` energy left.");
+            }
+
+            DeleteCommandFromDiscord();
+            Thread.Sleep(1500);
             return true;
         }
-
-        private int GetPowerUpsUsed(GameObject game, int playerId)
+        
+        private int GetEnergy(GameObject game, int playerId)
         {
-            var metaDataKey = $"{playerId}-powerups-used";
+            var metaDataKey = $"{playerId}-energy";
+            var numUsedString = game.GetMetadata(metaDataKey);
+
+            if (string.IsNullOrEmpty(numUsedString))
+            {
+                game.SetMetadata(metaDataKey, MAX_ENERGY.ToString());
+                return MAX_ENERGY;
+            }
+
+            return int.Parse(numUsedString);
+        }
+
+        private void AddEnergy(GameObject game, int playerId, int value)
+        {
+            var currentEnergy = GetEnergy(game, playerId);
+            var metaDataKey = $"{playerId}-energy";
+            var newEnergy = Math.Min(currentEnergy + value, MAX_ENERGY);
+            game.SetMetadata(metaDataKey, newEnergy.ToString());
+        }
+
+        private int GetPowerUpUses(GameObject game, int playerId, PowerUp powerUp)
+        {
+            var metaDataKey = $"{playerId}-{powerUp.Name}-uses";
             var numUsedString = game.GetMetadata(metaDataKey);
 
             if (string.IsNullOrEmpty(numUsedString))
@@ -177,10 +334,11 @@ namespace PerudoBot.Modules
             return int.Parse(numUsedString);
         }
 
-        private void SetPowerUpsUsed(GameObject game, int playerId, int value)
+        private void AddPowerUpUses(GameObject game, int playerId, PowerUp powerUp, int value)
         {
-            var metaDataKey = $"{playerId}-powerups-used";
-            game.SetMetadata(metaDataKey, value.ToString());
+            var currentyPowerUpUses = GetPowerUpUses(game, playerId, powerUp);
+            var metaDataKey = $"{playerId}-{powerUp.Name}-used";
+            game.SetMetadata(metaDataKey, (currentyPowerUpUses + value).ToString());
         }
 
     }
