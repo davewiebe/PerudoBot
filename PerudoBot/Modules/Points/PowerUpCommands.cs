@@ -44,7 +44,7 @@ namespace PerudoBot.Modules
             }
             game.AddRandomDice(powerUpPlayerId, removedDice.Count);
 
-            await SendMessageAsync($":zap: {powerUpPlayer.Name} reforged their hand");
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} recombobulated their hand");
 
             var playersToUpdate = game.GetAllPlayers()
                 .Where(x => x.NumberOfDice > 0)
@@ -114,7 +114,7 @@ namespace PerudoBot.Modules
             game.AddRandomDice(powerUpPlayerId, numRevealed);
             game.AddRandomDice(powerUpPlayerId, numToReroll - numRevealed, isMystery: true);
 
-            await SendMessageAsync($":zap: {powerUpPlayer.Name} magnified {numToReroll} of their dice");
+            await SendMessageAsync($":zap: {powerUpPlayer.Name} promoted {numToReroll} of their dice");
 
             powerUpPlayer = game.GetPlayer(powerUpPlayerId);
             var playersToUpates = new List<PlayerData> { powerUpPlayer };
@@ -359,7 +359,7 @@ namespace PerudoBot.Modules
             AddPowerUpUses(game, player.PlayerId, powerUp, 1);
             DeleteCommandFromDiscord();
 
-            Thread.Sleep(1500);
+            Thread.Sleep(2000);
 
             return true;
         }
