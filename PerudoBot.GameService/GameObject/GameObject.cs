@@ -175,16 +175,6 @@ namespace PerudoBot.GameService
                 .ToList();
         }
 
-        public PlayerData GetRandomPlayerWithDice(int excludePlayerId = -1)
-        {
-            var playersWithDice = GetAllPlayers()
-                .Where(x => x.PlayerId != excludePlayerId)
-                .Where(x => x.NumberOfDice > 0)
-                .ToList();
-            var randomPlayer = _random.Next(0, playersWithDice.Count);
-            return playersWithDice[randomPlayer];
-        }
-
         public bool HasPlayerWithDice(int playerId)
         {
             return _game.GamePlayers
