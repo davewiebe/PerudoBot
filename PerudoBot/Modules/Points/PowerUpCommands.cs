@@ -53,46 +53,6 @@ namespace PerudoBot.Modules
             await SendOutDice(playersToUpdate, isUpdate: true);
         }
 
-        [Command("charm")]
-        public async Task Charm()
-        {
-            SetGuildAndChannel();
-            var game = _gameHandler.GetActiveGame();
-            if (game == null) return;
-
-            var powerUpPlayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
-            var powerUpPlayer = game.GetPlayer(powerUpPlayerId);
-
-            if (!await AbleToUsePowerUp(game, powerUpPlayer, PowerUps.Charm)) return;
-
-            var playersWithDice = game.GetAllPlayers()
-                .Where(x => x.PlayerId != powerUpPlayerId)
-                .Where(x => x.NumberOfDice > 0)
-                .ToList();
-
-            var charmedPlayerId = playersWithDice[_random.Next(0, playersWithDice.Count)].PlayerId;
-            var powerUpPlayerDice = new List<int>(powerUpPlayer.Dice);
-
-            int numToGive = _random.Next(1, 3);
-            numToGive = Math.Min(numToGive, powerUpPlayer.Dice.Count);
-
-            var diceToGive = new List<int>();
-            for (int i = 0; i < numToGive; i++)
-            {
-                var randomDieIndex = _random.Next(0, powerUpPlayerDice.Count);
-                diceToGive.Add(powerUpPlayerDice[randomDieIndex]);
-                powerUpPlayerDice.RemoveAt(randomDieIndex);
-            }
-
-            game.AddDice(charmedPlayerId, diceToGive, isMystery: true);
-            var charmedPlayer = game.GetPlayer(charmedPlayerId);
-
-            await SendMessageAsync($":zap: {powerUpPlayer.Name} charmed {charmedPlayer.Name} with {numToGive} of their dice");
- 
-            var playersToUpates = new List<PlayerData> { charmedPlayer };
-            await SendOutDice(playersToUpates, isUpdate: true);
-        }
-
 
         [Command("promote")]
         public async Task Promote()
@@ -200,7 +160,7 @@ namespace PerudoBot.Modules
             else if (chanceRoll < 10)
             {
                 game.AddDice(powerUpPlayerId, new List<int> { 1 });
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special dice");
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
             }
             else if (chanceRoll < 25)
             {
@@ -367,14 +327,12 @@ namespace PerudoBot.Modules
             if (powerUp.Cost > 0)
             {
                 AddUsedPoints(player.PlayerId, powerUp.Cost);
-                await SendMessageAsync($":grey_exclamation: {player.Name} spent `{powerUp.Cost}` points to use `{powerUp.Name}`.");
+                //await SendMessageAsync($":grey_exclamation: {player.Name} spent `{powerUp.Cost}` points to use `{powerUp.Name}`.");
             }
 
             AddPowerUpUses(game, player.PlayerId, powerUp, 1, perRound: true);
             AddPowerUpUses(game, player.PlayerId, powerUp, 1);
             DeleteCommandFromDiscord();
-
-            Thread.Sleep(2000);
 
             return true;
         }

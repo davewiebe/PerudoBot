@@ -46,7 +46,8 @@ namespace PerudoBot.GameService.Constants
             Description = "Transform your dice unpredictably",
             Cost = 10,
             MinPlayers = 3,
-            MinDice = 2,
+            MinDice = 3,
+            UsesPerRound = 2,
             OutOfTurn = true
         };
 
@@ -67,15 +68,6 @@ namespace PerudoBot.GameService.Constants
             MinDice = 2
         };
 
-        public static PowerUp Charm = new PowerUp
-        {
-            Name = "Charm",
-            Description = "Charm a random player with a copy of 1-2 dice from your hand, new dice are mystery",
-            Cost = 10,
-            MinDice = 3,
-            MinPlayers = 3
-        };
-
         public static PowerUp Recombobulate = new PowerUp
         {
             Name = "Recombobulate",
@@ -87,7 +79,7 @@ namespace PerudoBot.GameService.Constants
 
         public static List<PowerUp> PowerUpList = new List<PowerUp>
         {
-             Gamble, Steal, Charm, Promote, Recombobulate, Lifetap, Claim
+             Gamble, Steal, Promote, Recombobulate, Lifetap, Claim
         };
     }
 }
