@@ -187,44 +187,59 @@ namespace PerudoBot.Modules
 
             var chanceRoll = _random.Next(0, 100);
 
-            if (chanceRoll < 5)
+            if (chanceRoll < 1)
+            {
+                game.AddDice(powerUpPlayerId, new List<int> { 1, 1, 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets three special dice");
+            }
+            else if (chanceRoll < 4)
             {
                 game.AddDice(powerUpPlayerId, new List<int> { 1, 1 });
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
             }
             else if (chanceRoll < 10)
             {
-                game.AddRandomDice(powerUpPlayerId, 2, isMystery: true);
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
-            }
-            else if (chanceRoll < 20)
-            {
                 game.AddDice(powerUpPlayerId, new List<int> { 1 });
-                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets two special dice");
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special dice");
             }
-            else if (chanceRoll < 40)
-            {
-                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
-            }
-            else if (chanceRoll < 60)
-            {
-                game.AddDice(powerUpPlayerId, new List<int> { 1 });
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} gets a special die");
-            }
-            else if (chanceRoll < 80)
-            {
-                game.RemoveRandomDice(powerUpPlayerId, 1);
-                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
-                game.AddDice(powerUpPlayerId, new List<int> { 1 });
-                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded one of his dice for two special dice");
-            }
-            else
+            else if (chanceRoll < 25)
             {
                 game.RemoveRandomDice(powerUpPlayerId, 1);
                 game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
                 await SendMessageAsync($":zap: {powerUpPlayer.Name} traded one of his dice for a special die");
+            }
+            else if (chanceRoll < 40)
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 2);
+                game.AddRandomDice(powerUpPlayerId, 2, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded two of his dice for two special dice");
+            }
+            else if (chanceRoll < 55)
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 2);
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                game.AddDice(powerUpPlayerId, new List<int> { 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded two of his dice for two special dice");
+            }
+            else if (chanceRoll < 70)
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 3);
+                game.AddRandomDice(powerUpPlayerId, 2, isMystery: true);
+                game.AddDice(powerUpPlayerId, new List<int> { 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded three of his dice for three special dice");
+            }
+            else if (chanceRoll < 85)
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 3);
+                game.AddRandomDice(powerUpPlayerId, 1, isMystery: true);
+                game.AddDice(powerUpPlayerId, new List<int> { 1, 1 });
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded three of his dice for three special dice");
+            }
+            else
+            {
+                game.RemoveRandomDice(powerUpPlayerId, 3);
+                game.AddRandomDice(powerUpPlayerId, 3, isMystery: true);
+                await SendMessageAsync($":zap: {powerUpPlayer.Name} traded three of his dice for three special dice");
             }
 
             powerUpPlayer = game.GetPlayer(powerUpPlayer.PlayerId);
