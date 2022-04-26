@@ -12,74 +12,47 @@ namespace PerudoBot.GameService.Constants
         public string Description { get; set; }
         public int Cost { get; set; } = 0;
         public bool OutOfTurn { get; set; } = false;
-        public int MinPlayers { get; set; } = 2;
+        public int MinPlayers { get; set; } = 3;
         public int MinDice { get; set; } = 1;
         public int UsesPerRound { get; set; } = 1;
-        public int UsesPerGame { get; set; } = 99;
+        public int UsesPerGame { get; set; } = 100;
     }
 
     public static class PowerUps
     {
-        public static int LIFETAP_AMOUNT = 60;
-        public static int CLAIM_AMOUNT = 30;
-        public static int CLAIM_THRESHOLD = 200;
+        public static int TOTAL_USES_PER_ROUND = 1;
 
         public static PowerUp Lifetap = new PowerUp
         {
             Name = "Lifetap",
-            Description = "Permanently lose a life to gain points",
-            MinPlayers = 3,
-            OutOfTurn = true
+            Description = "Permanently lose a life to get dice",
         };
 
-        public static PowerUp Claim = new PowerUp
+        public static PowerUp Touch = new PowerUp
         {
-            Name = "Claim",
-            Description = "Claim free points once per game",
-            UsesPerGame = 1,
-            OutOfTurn = true
+            Name = "Touch",
+            Description = "If you're going off the grid, might want to check the temperature first",
+            Cost = 25
         };
 
         public static PowerUp Gamble = new PowerUp
         {
             Name = "Gamble",
-            Description = "Transform your dice unpredictably",
-            Cost = 10,
-            MinPlayers = 3,
-            MinDice = 3,
-            UsesPerRound = 2,
-            OutOfTurn = true
+            Description = "Transform your dice unpredictably, use `!odds` to find out more",
+            Cost = 50,
+            MinDice = 2,
         };
 
         public static PowerUp Steal = new PowerUp
         {
             Name = "Steal",
             Description = "Steal 2-3 dice from a target player, new dice are mystery",
-            Cost = 10,
-            MinPlayers = 3,
-        };
-
-        public static PowerUp Promote = new PowerUp
-        {
-            Name = "Promote",
-            Description = "Reroll 1-3 of your smallest dice, half of the new dice are mystery",
-            Cost = 10,
-            MinPlayers = 3,
-            MinDice = 2
-        };
-
-        public static PowerUp Recombobulate = new PowerUp
-        {
-            Name = "Recombobulate",
-            Description = "Reroll your hand, each player gets one of your old dice as a mystery die",
-            UsesPerGame = 1,
-            MinPlayers = 5,
-            MinDice = 5
+            Cost = 100,
         };
 
         public static List<PowerUp> PowerUpList = new List<PowerUp>
         {
-             Gamble, Steal, Promote, Recombobulate, Lifetap, Claim
+             Steal, Gamble, Touch, Lifetap
         };
     }
 }
