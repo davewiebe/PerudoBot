@@ -1,5 +1,8 @@
 ﻿using Discord.Commands;
+using PerudoBot.Database.Data;
+using PerudoBot.Extensions;
 using PerudoBot.GameService;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PerudoBot.Modules
@@ -12,7 +15,7 @@ namespace PerudoBot.Modules
             if (betText == null || betText.Length < 2) return;
 
             var betType = betText[0].ToLower();
-            if (betType != "exact" && betType != "liar") return;
+            if (betType != BetType.Exact && betType != BetType.Liar) return;
 
             if (!int.TryParse(betText[1], out int betAmount)) return;
 
@@ -20,32 +23,36 @@ namespace PerudoBot.Modules
             var game = _gameHandler.GetActiveGame();
             if (game == null) return;
 
-            var bettinglayerId = GetPlayerId(Context.User.Id, Context.Guild.Id);
+            var targetAction = game.GetPreviousBid();
+            if (targetAction == null) return;
 
-            if (GetAvailablePoints(bettinglayerId) < betAmount)
+            var bettingPlayer = _gameHandler
+                .CreateAndGetDiscordPlayer(Context.User.Id, Context.User.Username, Context.User.IsBot)
+                .Player;
+
+            if (targetAction.GamePlayer.PlayerId == bettingPlayer.Id)
+            {
+                await SendMessageAsync($"You can't bet on your own bid.");
+                return;
+            }
+
+            var existingBetsAmount = game
+                .GetCurrentRound()
+                .Actions.OfType<Bet>()
+                .Where(x => x.BettingPlayerId == bettingPlayer.Id)
+                .Sum(x => x.BetAmount);
+
+            if (GetAvailablePoints(bettingPlayer.Id) < (betAmount + existingBetsAmount))
             {
                 await SendMessageAsync($"You don't have enough points to place this bet.");
                 return;
             };
 
+            DeleteCommandFromDiscord();
+            game.BetOnLatestAction(bettingPlayer, betAmount, betType);
 
-
-
-        }
-
-        private void RegisterBet(GameObject game, int playerId, string usesKey)
-        {
-            //var metaDataKey = $"{playerId}-{usesKey}-uses";
-
-            //var numUsedString = game.GetMetadata(metaDataKey);
-
-            //if (string.IsNullOrEmpty(numUsedString))
-            //{
-            //    game.SetMetadata(metaDataKey, "0");
-            //    return 0;
-            //}
-
-            //return int.Parse(numUsedString);
+            var typeString = (betType == BetType.Liar) ? "a lie" : "exact";
+            await SendMessageAsync($":dollar: {bettingPlayer.Name} bets that `{targetAction.Quantity}` ˣ {targetAction.Pips.ToEmoji()} is {typeString}.");
         }
     }
 }

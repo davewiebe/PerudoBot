@@ -40,7 +40,8 @@ namespace PerudoBot.Tests
             game.SetPlayerDice(2, "2,3,4,5,6");
 
             game.Bid(1, 10, 6);
-            var liarResult = game.Liar(2);
+            var roundResult = game.Liar(2);
+            var liarResult = roundResult.LiarResult;
 
             var wasEliminated = liarResult.PlayerWhoLostDice.IsEliminated;
             var numberOfDiceRemaining = liarResult.PlayerWhoLostDice.NumberOfDice;
@@ -93,7 +94,8 @@ namespace PerudoBot.Tests
             game.SetPlayerDice(5, "5,5,5,5,5");
 
             game.Bid(1, 6, 5); // there's only 5 5's, will lose 1 die
-            var liarResult = game.Liar(2);
+            var roundResult = game.Liar(2);
+            var liarResult = roundResult.LiarResult;
 
             Assert.AreEqual(2, game.GetCurrentPlayer().PlayerId); // player 1 will be out and player 2 should go instead
         }

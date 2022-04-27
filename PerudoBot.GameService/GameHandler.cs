@@ -47,7 +47,7 @@ namespace PerudoBot.GameService
             return true;
         }
 
-        private DiscordPlayer CreateAndGetDiscordPlayer(ulong userId, string name, bool isBot)
+        public DiscordPlayer CreateAndGetDiscordPlayer(ulong userId, string name, bool isBot)
         {
             var discordPlayer = _db.DiscordPlayers
                 .Include(x => x.Player)

@@ -28,6 +28,8 @@ namespace PerudoBot.Database.Data
         public DbSet<LiarCall> LiarCalls { get; set; }
         public DbSet<ExactCall> ExactCalls { get; set; }
 
+        public DbSet<Bet> Bets { get; set; }
+
         public DbSet<Round> Rounds { get; set; }
 
         public DbSet<StandardRound> StandardRounds { get; }
