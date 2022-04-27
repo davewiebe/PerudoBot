@@ -742,8 +742,12 @@ namespace PerudoBot.GameService
                     betResult.IsSuccessful = (actualQuantity == targetQuantity);
                 }
 
+                bet.IsSuccessful = betResult.IsSuccessful;
+
                 betResults.Add(betResult);
             }
+
+            _db.SaveChanges();
 
             return betResults;
         }

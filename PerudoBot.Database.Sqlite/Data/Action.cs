@@ -62,5 +62,7 @@ namespace PerudoBot.Database.Data
 
         public int BetAmount { get; set; }
         public string BetType { get; set; }
+
+        public bool? IsSuccessful { get; set; }
     }
 }
