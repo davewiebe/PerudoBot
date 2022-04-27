@@ -25,16 +25,16 @@ namespace PerudoBot.GameService.Constants
         public static PowerUp Lifetap = new PowerUp
         {
             Name = "Lifetap",
-            Description = "Permanently lose a life to get three dice this turn",
+            Description = "Permanently lose a life to get 3 dice this turn",
             UsesPerGame = 5,
-            Cost = 20,
+            Cost = 10
         };
 
         public static PowerUp Touch = new PowerUp
         {
             Name = "Touch",
             Description = "If you're going off the grid, might want to check the temperature first",
-            Cost = 30
+            Cost = 20
         };
 
         public static PowerUp Gamble = new PowerUp
@@ -47,7 +47,7 @@ namespace PerudoBot.GameService.Constants
         public static PowerUp Steal = new PowerUp
         {
             Name = "Steal",
-            Description = "Steal 2-3 dice from a target player, new dice are mystery",
+            Description = "Steal up to 3 dice from target player, new dice are mystery",
             Cost = 40
         };
 
