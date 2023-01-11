@@ -63,8 +63,7 @@ namespace PerudoBot
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<PerudoBotDbContext>(options =>
                     options.UseLazyLoadingProxies()
-                           //.UseSqlServer(_configuration.GetConnectionString("PerudoBotDb")))
-                           .UseSqlServer("Server=192.168.1.213;Database=PerudoBotDb;User Id=PerudoUser;Password=PerudoBot2;Trust Server Certificate=true"))
+                           .UseSqlServer(_configuration.GetConnectionString("PerudoBotDb")))
                 .BuildServiceProvider();
 
             var db = _services.GetRequiredService<PerudoBotDbContext>();

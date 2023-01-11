@@ -46,12 +46,6 @@ namespace PerudoBot.Database.Data
             modelBuilder.Entity<Round>()
                 .ToTable("Rounds")
                 .HasDiscriminator<string>("RoundType");
-            /*
-            modelBuilder.Entity<GamePlayerRound>()
-                .HasOne(b => b.Round)
-                .WithMany(x => x.GamePlayerRounds)
-                .OnDelete(DeleteBehavior.Cascade);
-                */
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -66,8 +60,7 @@ namespace PerudoBot.Database.Data
                 var connectionString = configuration.GetConnectionString("PerudoBotDb");
                 optionsBuilder
                     //.UseLazyLoadingProxies()
-                    //.UseSqlServer(connectionString);
-                    .UseSqlServer("Server=192.168.1.213;Database=PerudoBotDb;User Id=PerudoUser;Password=PerudoBot2;Trust Server Certificate=true");
+                    .UseSqlServer(connectionString);
             }
         }
     }
