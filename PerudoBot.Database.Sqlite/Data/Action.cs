@@ -16,13 +16,13 @@ namespace PerudoBot.Database.Data
 
         public virtual GamePlayer GamePlayer { get; set; }
 
-        public int GamePlayerId { get; set; }
+        public int? GamePlayerId { get; set; }
 
         public virtual GamePlayerRound GamePlayerRound { get; set; }
 
         public int GamePlayerRoundId { get; set; }
 
-        public int RoundId { get; set; }
+        public int? RoundId { get; set; }
         public virtual Round Round { get; set; }
 
         public int? ParentActionId { get; set; }

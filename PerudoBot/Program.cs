@@ -36,7 +36,11 @@ namespace PerudoBot
                 .AddJsonFile("appsettings.json", false)
                 .Build();
 
-            var config = new DiscordSocketConfig { MessageCacheSize = 100, LogLevel = LogSeverity.Verbose };
+            var config = new DiscordSocketConfig { 
+                MessageCacheSize = 100, 
+                LogLevel = LogSeverity.Verbose,
+                GatewayIntents = GatewayIntents.All
+            };
             _client = new DiscordSocketClient(config);
             _commands = new CommandService();
 
@@ -44,7 +48,7 @@ namespace PerudoBot
             Log.Logger = new LoggerConfiguration()
                             .ReadFrom.Configuration(_configuration)
                             .Enrich.FromLogContext()
-                            .WriteTo.SQLite(_configuration.GetConnectionString("SerilogDb"))
+                            //.WriteTo.MSSqlServer(_configuration.GetConnectionString("SerilogDb"))
                             .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning)
                             .MinimumLevel.Debug()
                             .CreateLogger();
@@ -56,10 +60,11 @@ namespace PerudoBot
                 .AddSingleton(_commands)
                 .AddSingleton(_configuration)
                 .AddLogging(configure => configure.AddSerilog())
-                .AddEntityFrameworkSqlite()
+                .AddEntityFrameworkSqlServer()
                 .AddDbContext<PerudoBotDbContext>(options =>
                     options.UseLazyLoadingProxies()
-                           .UseSqlite(_configuration.GetConnectionString("PerudoBotDb")))
+                           //.UseSqlServer(_configuration.GetConnectionString("PerudoBotDb")))
+                           .UseSqlServer("Server=192.168.1.213;Database=PerudoBotDb;User Id=PerudoUser;Password=PerudoBot2;Trust Server Certificate=true"))
                 .BuildServiceProvider();
 
             var db = _services.GetRequiredService<PerudoBotDbContext>();
@@ -122,7 +127,7 @@ namespace PerudoBot
         public async Task RegisterCommandsAsync()
         {
             _client.MessageReceived += HandleCommandAsync;
-            _client.ReactionAdded += HandleReactionAddedAsync;
+            //_client.ReactionAdded += HandleReactionAddedAsync;
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 

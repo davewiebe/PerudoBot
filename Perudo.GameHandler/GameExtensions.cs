@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using PerudoBot.GameService;
+//using Discord;
 
 namespace Perudo.GameHandler
 {
@@ -11,6 +13,9 @@ namespace Perudo.GameHandler
             _game = game;
         }
 
-
+        //public async Task Poppity(Func<string, bool, Embed, RequestOptions, AllowedMentions, MessageReference, Task<IUserMessage>> replyAsync)
+        //{
+        //    await replyAsync("poppity", false, null, null, null, null);
+        //}
     }
 }

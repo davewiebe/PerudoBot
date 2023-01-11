@@ -1,14 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace PerudoBot.Database.Sqlite.Migrations
+#nullable disable
+
+namespace PerudoBot.Database.Migrations
 {
-    public partial class Metadata2 : Migration
+    /// <inheritdoc />
+    public partial class UpdateKeys : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 

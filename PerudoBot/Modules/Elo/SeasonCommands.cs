@@ -21,6 +21,7 @@ namespace PerudoBot.Modules
 
             var discordPlayer = _db.DiscordPlayers
                 .Include(x => x.Player)
+                .Where(x => x.GuildId == Context.Guild.Id)
                 .SingleOrDefault(x => x.UserId == Context.User.Id);
 
             if (!discordPlayer.IsAdministrator) return;
