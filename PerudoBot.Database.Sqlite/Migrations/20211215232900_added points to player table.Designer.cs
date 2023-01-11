@@ -2,49 +2,43 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerudoBot.Database.Data;
 
-#nullable disable
-
-namespace PerudoBot.Database.Migrations
+namespace PerudoBot.Database.Sqlite.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    partial class PerudoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211215232900_added points to player table")]
+    partial class addedpointstoplayertable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.2")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+                .HasAnnotation("ProductVersion", "5.0.9");
 
             modelBuilder.Entity("PerudoBot.Database.Data.Action", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ActionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int?>("GamePlayerId")
-                        .HasColumnType("int");
+                    b.Property<int>("GamePlayerId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("GamePlayerRoundId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("ParentActionId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<int?>("RoundId")
-                        .HasColumnType("int");
+                    b.Property<int>("RoundId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -56,38 +50,34 @@ namespace PerudoBot.Database.Migrations
 
                     b.HasIndex("RoundId");
 
-                    b.ToTable("Actions", (string)null);
+                    b.ToTable("Actions");
 
                     b.HasDiscriminator<string>("ActionType").HasValue("Action");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("PerudoBot.Database.Data.DiscordPlayer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("BotKey")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsAdministrator")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsBot")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("UserId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -101,15 +91,13 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SeasonName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -120,27 +108,25 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("ChannelId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("GamePlayerTurnId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Mode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("State")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("WinnerPlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -151,24 +137,22 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("NumberOfDice")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Rank")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TurnOrder")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -183,18 +167,16 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Dice")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("GamePlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<int?>("RoundId")
-                        .HasColumnType("int");
+                    b.Property<int>("RoundId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -209,24 +191,22 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("GameId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("GamePlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Key")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("PlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -243,12 +223,10 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Points")
                         .HasColumnType("INTEGER");
@@ -262,21 +240,19 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("EloSeasonId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("GameMode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Rating")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -291,32 +267,28 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("RoundNumber")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("RoundType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("StartingPlayerId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("Rounds", (string)null);
+                    b.ToTable("Rounds");
 
                     b.HasDiscriminator<string>("RoundType").HasValue("Round");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("PerudoBot.Database.Data.Bid", b =>
@@ -324,10 +296,10 @@ namespace PerudoBot.Database.Migrations
                     b.HasBaseType("PerudoBot.Database.Data.Action");
 
                     b.Property<int>("Pips")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasDiscriminator().HasValue("Bid");
                 });
@@ -357,7 +329,9 @@ namespace PerudoBot.Database.Migrations
                 {
                     b.HasOne("PerudoBot.Database.Data.GamePlayer", "GamePlayer")
                         .WithMany()
-                        .HasForeignKey("GamePlayerId");
+                        .HasForeignKey("GamePlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("PerudoBot.Database.Data.GamePlayerRound", "GamePlayerRound")
                         .WithMany("Actions")
@@ -371,7 +345,9 @@ namespace PerudoBot.Database.Migrations
 
                     b.HasOne("PerudoBot.Database.Data.Round", "Round")
                         .WithMany("Actions")
-                        .HasForeignKey("RoundId");
+                        .HasForeignKey("RoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GamePlayer");
 
@@ -422,7 +398,9 @@ namespace PerudoBot.Database.Migrations
 
                     b.HasOne("PerudoBot.Database.Data.Round", "Round")
                         .WithMany("GamePlayerRounds")
-                        .HasForeignKey("RoundId");
+                        .HasForeignKey("RoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("GamePlayer");
 

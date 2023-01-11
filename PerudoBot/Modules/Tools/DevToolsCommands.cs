@@ -18,5 +18,40 @@ namespace PerudoBot.Modules
             var playerDice = game.GetAllPlayers();
             await SendOutDice(playerDice);
         }
+
+        [Command("resetround")]
+        public async Task ResetRound()
+        {
+            SetGuildAndChannel();
+            var gameObject = _gameHandler.GetActiveGame();
+
+            if (gameObject != null)
+            {
+                await SendRoundSummary();
+                await StartNewRound(gameObject);
+            }
+            else
+            {
+                await SendMessageAsync("No active game");
+            }
+        }
+
+        [Command("status")]
+        public async Task Status()
+        {
+            SetGuildAndChannel();
+            var gameObject = _gameHandler.GetActiveGame();
+            if (gameObject != null)
+            {
+                var roundStatus = gameObject.GetCurrentRoundStatus();
+                await SendCurrentRoundStatus(roundStatus);
+            }
+            else
+            {
+                await SendMessageAsync("No active game");
+            }
+        }
     }
+
+
 }
