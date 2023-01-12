@@ -12,8 +12,8 @@ using PerudoBot.Database.Data;
 namespace PerudoBot.Database.Migrations
 {
     [DbContext(typeof(PerudoBotDbContext))]
-    [Migration("20230111233309_UpdateKeys")]
-    partial class UpdateKeys
+    [Migration("20230111235257_InitialDatabase")]
+    partial class InitialDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -252,6 +252,9 @@ namespace PerudoBot.Database.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

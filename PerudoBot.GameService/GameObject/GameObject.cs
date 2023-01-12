@@ -260,7 +260,7 @@ namespace PerudoBot.GameService
                 dice.Sort();
                 var gamePlayerRound = new GamePlayerRound
                 {
-                    //Round = newRound,
+                    Round = newRound,
                     Dice = string.Join(",", dice),
                     GamePlayer = player
                 };

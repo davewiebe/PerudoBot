@@ -48,7 +48,8 @@ namespace PerudoBot.Database.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Points = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -164,9 +165,9 @@ namespace PerudoBot.Database.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    RoundId = table.Column<int>(type: "int", nullable: true),
                     GamePlayerId = table.Column<int>(type: "int", nullable: false),
-                    Dice = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RoundId = table.Column<int>(type: "int", nullable: true)
+                    Dice = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

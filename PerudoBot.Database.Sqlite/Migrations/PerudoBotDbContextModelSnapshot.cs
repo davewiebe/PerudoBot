@@ -251,7 +251,7 @@ namespace PerudoBot.Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Points")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
